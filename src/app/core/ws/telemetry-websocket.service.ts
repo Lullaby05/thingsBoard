@@ -14,9 +14,10 @@
 /// limitations under the License.
 ///
 
-import { Inject, Injectable, NgZone } from '@angular/core';
+import { Inject, Injectable, NgZone } from "@angular/core";
 import {
-  AlarmCountCmd, AlarmCountUnsubscribeCmd,
+  AlarmCountCmd,
+  AlarmCountUnsubscribeCmd,
   AlarmCountUpdate,
   AlarmDataCmd,
   AlarmDataUnsubscribeCmd,
@@ -28,7 +29,8 @@ import {
   EntityDataCmd,
   EntityDataUnsubscribeCmd,
   EntityDataUpdate,
-  GetHistoryCmd, isAlarmCountUpdateMsg,
+  GetHistoryCmd,
+  isAlarmCountUpdateMsg,
   isAlarmDataUpdateMsg,
   isEntityCountUpdateMsg,
   isEntityDataUpdateMsg,
@@ -38,106 +40,127 @@ import {
   TelemetryPluginCmdsWrapper,
   TelemetrySubscriber,
   TimeseriesSubscriptionCmd,
-  WebsocketDataMsg
-} from '@app/shared/models/telemetry/telemetry.models';
-import { Store } from '@ngrx/store';
-import { AppState } from '@core/core.state';
-import { AuthService } from '@core/auth/auth.service';
-import { WINDOW } from '@core/services/window.service';
-import { WebsocketService } from '@core/ws/websocket.service';
+  WebsocketDataMsg,
+} from "@app/shared/models/telemetry/telemetry.models";
+import { Store } from "@ngrx/store";
+import { AppState } from "@core/core.state";
+import { AuthService } from "@core/auth/auth.service";
+import { WINDOW } from "@core/services/window.service";
+import { WebsocketService } from "@core/ws/websocket.service";
 
 // @dynamic
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class TelemetryWebsocketService extends WebsocketService<TelemetrySubscriber> {
-
   cmdWrapper: TelemetryPluginCmdsWrapper;
 
-  constructor(protected store: Store<AppState>,
-              protected authService: AuthService,
-              protected ngZone: NgZone,
-              @Inject(WINDOW) protected window: Window) {
-    super(store, authService, ngZone, 'api/ws/plugins/telemetry', new TelemetryPluginCmdsWrapper(), window);
+  constructor(
+    protected store: Store<AppState>,
+    protected authService: AuthService,
+    protected ngZone: NgZone,
+    @Inject(WINDOW) protected window: Window
+  ) {
+    super(
+      store,
+      authService,
+      ngZone,
+      "api/ws/plugins/telemetry",
+      new TelemetryPluginCmdsWrapper(),
+      window
+    );
   }
 
   public subscribe(subscriber: TelemetrySubscriber) {
     this.isActive = true;
-    subscriber.subscriptionCommands.forEach(
-      (subscriptionCommand) => {
-        const cmdId = this.nextCmdId();
-        this.subscribersMap.set(cmdId, subscriber);
-        subscriptionCommand.cmdId = cmdId;
-        if (subscriptionCommand instanceof SubscriptionCmd) {
-          if (subscriptionCommand.getType() === TelemetryFeature.TIMESERIES) {
-            this.cmdWrapper.tsSubCmds.push(subscriptionCommand as TimeseriesSubscriptionCmd);
-          } else {
-            this.cmdWrapper.attrSubCmds.push(subscriptionCommand as AttributesSubscriptionCmd);
-          }
-        } else if (subscriptionCommand instanceof GetHistoryCmd) {
-          this.cmdWrapper.historyCmds.push(subscriptionCommand);
-        } else if (subscriptionCommand instanceof EntityDataCmd) {
-          this.cmdWrapper.entityDataCmds.push(subscriptionCommand);
-        } else if (subscriptionCommand instanceof AlarmDataCmd) {
-          this.cmdWrapper.alarmDataCmds.push(subscriptionCommand);
-        } else if (subscriptionCommand instanceof EntityCountCmd) {
-          this.cmdWrapper.entityCountCmds.push(subscriptionCommand);
-        } else if (subscriptionCommand instanceof AlarmCountCmd) {
-          this.cmdWrapper.alarmCountCmds.push(subscriptionCommand);
+    subscriber.subscriptionCommands.forEach((subscriptionCommand) => {
+      const cmdId = this.nextCmdId();
+      this.subscribersMap.set(cmdId, subscriber);
+      subscriptionCommand.cmdId = cmdId;
+      if (subscriptionCommand instanceof SubscriptionCmd) {
+        if (subscriptionCommand.getType() === TelemetryFeature.TIMESERIES) {
+          this.cmdWrapper.tsSubCmds.push(
+            subscriptionCommand as TimeseriesSubscriptionCmd
+          );
+        } else {
+          this.cmdWrapper.attrSubCmds.push(
+            subscriptionCommand as AttributesSubscriptionCmd
+          );
         }
+      } else if (subscriptionCommand instanceof GetHistoryCmd) {
+        this.cmdWrapper.historyCmds.push(subscriptionCommand);
+      } else if (subscriptionCommand instanceof EntityDataCmd) {
+        this.cmdWrapper.entityDataCmds.push(subscriptionCommand);
+      } else if (subscriptionCommand instanceof AlarmDataCmd) {
+        this.cmdWrapper.alarmDataCmds.push(subscriptionCommand);
+      } else if (subscriptionCommand instanceof EntityCountCmd) {
+        this.cmdWrapper.entityCountCmds.push(subscriptionCommand);
+      } else if (subscriptionCommand instanceof AlarmCountCmd) {
+        this.cmdWrapper.alarmCountCmds.push(subscriptionCommand);
       }
-    );
+    });
     this.subscribersCount++;
     this.publishCommands();
   }
 
   public update(subscriber: TelemetrySubscriber) {
     if (!this.isReconnect) {
-      subscriber.subscriptionCommands.forEach(
-        (subscriptionCommand) => {
-          if (subscriptionCommand.cmdId && subscriptionCommand instanceof EntityDataCmd) {
-            this.cmdWrapper.entityDataCmds.push(subscriptionCommand);
-          }
+      subscriber.subscriptionCommands.forEach((subscriptionCommand) => {
+        if (
+          subscriptionCommand.cmdId &&
+          subscriptionCommand instanceof EntityDataCmd
+        ) {
+          this.cmdWrapper.entityDataCmds.push(subscriptionCommand);
         }
-      );
+      });
       this.publishCommands();
     }
   }
 
   public unsubscribe(subscriber: TelemetrySubscriber) {
     if (this.isActive) {
-      subscriber.subscriptionCommands.forEach(
-        (subscriptionCommand) => {
-          if (subscriptionCommand instanceof SubscriptionCmd) {
-            subscriptionCommand.unsubscribe = true;
-            if (subscriptionCommand.getType() === TelemetryFeature.TIMESERIES) {
-              this.cmdWrapper.tsSubCmds.push(subscriptionCommand as TimeseriesSubscriptionCmd);
-            } else {
-              this.cmdWrapper.attrSubCmds.push(subscriptionCommand as AttributesSubscriptionCmd);
-            }
-          } else if (subscriptionCommand instanceof EntityDataCmd) {
-            const entityDataUnsubscribeCmd = new EntityDataUnsubscribeCmd();
-            entityDataUnsubscribeCmd.cmdId = subscriptionCommand.cmdId;
-            this.cmdWrapper.entityDataUnsubscribeCmds.push(entityDataUnsubscribeCmd);
-          } else if (subscriptionCommand instanceof AlarmDataCmd) {
-            const alarmDataUnsubscribeCmd = new AlarmDataUnsubscribeCmd();
-            alarmDataUnsubscribeCmd.cmdId = subscriptionCommand.cmdId;
-            this.cmdWrapper.alarmDataUnsubscribeCmds.push(alarmDataUnsubscribeCmd);
-          } else if (subscriptionCommand instanceof EntityCountCmd) {
-            const entityCountUnsubscribeCmd = new EntityCountUnsubscribeCmd();
-            entityCountUnsubscribeCmd.cmdId = subscriptionCommand.cmdId;
-            this.cmdWrapper.entityCountUnsubscribeCmds.push(entityCountUnsubscribeCmd);
-          } else if (subscriptionCommand instanceof AlarmCountCmd) {
-            const alarmCountUnsubscribeCmd = new AlarmCountUnsubscribeCmd();
-            alarmCountUnsubscribeCmd.cmdId = subscriptionCommand.cmdId;
-            this.cmdWrapper.alarmCountUnsubscribeCmds.push(alarmCountUnsubscribeCmd);
+      subscriber.subscriptionCommands.forEach((subscriptionCommand) => {
+        if (subscriptionCommand instanceof SubscriptionCmd) {
+          subscriptionCommand.unsubscribe = true;
+          if (subscriptionCommand.getType() === TelemetryFeature.TIMESERIES) {
+            this.cmdWrapper.tsSubCmds.push(
+              subscriptionCommand as TimeseriesSubscriptionCmd
+            );
+          } else {
+            this.cmdWrapper.attrSubCmds.push(
+              subscriptionCommand as AttributesSubscriptionCmd
+            );
           }
-          const cmdId = subscriptionCommand.cmdId;
-          if (cmdId) {
-            this.subscribersMap.delete(cmdId);
-          }
+        } else if (subscriptionCommand instanceof EntityDataCmd) {
+          const entityDataUnsubscribeCmd = new EntityDataUnsubscribeCmd();
+          entityDataUnsubscribeCmd.cmdId = subscriptionCommand.cmdId;
+          this.cmdWrapper.entityDataUnsubscribeCmds.push(
+            entityDataUnsubscribeCmd
+          );
+        } else if (subscriptionCommand instanceof AlarmDataCmd) {
+          const alarmDataUnsubscribeCmd = new AlarmDataUnsubscribeCmd();
+          alarmDataUnsubscribeCmd.cmdId = subscriptionCommand.cmdId;
+          this.cmdWrapper.alarmDataUnsubscribeCmds.push(
+            alarmDataUnsubscribeCmd
+          );
+        } else if (subscriptionCommand instanceof EntityCountCmd) {
+          const entityCountUnsubscribeCmd = new EntityCountUnsubscribeCmd();
+          entityCountUnsubscribeCmd.cmdId = subscriptionCommand.cmdId;
+          this.cmdWrapper.entityCountUnsubscribeCmds.push(
+            entityCountUnsubscribeCmd
+          );
+        } else if (subscriptionCommand instanceof AlarmCountCmd) {
+          const alarmCountUnsubscribeCmd = new AlarmCountUnsubscribeCmd();
+          alarmCountUnsubscribeCmd.cmdId = subscriptionCommand.cmdId;
+          this.cmdWrapper.alarmCountUnsubscribeCmds.push(
+            alarmCountUnsubscribeCmd
+          );
         }
-      );
+        const cmdId = subscriptionCommand.cmdId;
+        if (cmdId) {
+          this.subscribersMap.delete(cmdId);
+        }
+      });
       this.reconnectSubscribers.delete(subscriber);
       this.subscribersCount--;
       this.publishCommands();
@@ -173,5 +196,4 @@ export class TelemetryWebsocketService extends WebsocketService<TelemetrySubscri
       }
     }
   }
-
 }

@@ -16,7 +16,7 @@
             min-width: 130px;
         }
         .code {
-            font: 400 16px / 20px Roboto Mono, "Helvetica Neue", monospace;
+            font: 400 16px / 20px '思源黑体',Roboto Mono, "Helvetica Neue", monospace;
             margin-left: 6px;
         }
         input[type="checkbox"] {
@@ -38,7 +38,7 @@
 <body style="margin: 0">
     <div style="margin: 8px; max-width: 286px">
         <div style="border: #d0d7de solid 1px; border-radius:4px">
-            <h3 style="padding: 16px 24px; margin: 0; font: 500 20px / 24px Roboto, 'Helvetica Neue', sans-serif; text-align: center">
+            <h3 style="padding: 16px 24px; margin: 0; font: 500 20px / 24px '思源黑体 Medium', Roboto, 'Helvetica Neue', sans-serif; text-align: center">
                 Backup codes
             </h3>
             <div class="code-block">

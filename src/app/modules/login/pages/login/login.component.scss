@@ -13,34 +13,84 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import '../../../../../scss/constants';
-@import '../../../../../theme';
+@import "../../../../../scss/constants";
+@import "../../../../../theme";
 
 :host {
   display: flex;
   flex: 1 1 0;
   .tb-login-content {
-    margin-top: 36px;
-    margin-bottom: 76px;
-    background-color: #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-image: url("../../../../../assets/background.jpg");
+    background-size: cover;
+    background-position: center;
+    .mat-mdc-card {
+      border-radius: 10px;
+      --mdc-elevated-card-container-color: #ffffff;
+      .mat-mdc-card-content {
+        padding: 0;
+        .header {
+          background-image: linear-gradient(to left, #428ffb 0%, #385de2 100%);
+          background-size: cover;
+          background-position: center;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 30px;
+          border-radius: 10px 10px 0 0;
+          gap: 20px;
+          width: 100%;
+          box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+          img {
+            width: 132px;
+            height: 80px;
+            margin: 0 auto;
+          }
+          .login-title {
+            margin-top: 0px;
+            text-align: center;
+            font-size: 24px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-family: Inter, -apple-system, BlinkMacSystemFont, PingFang SC,
+              Hiragino Sans GB, noto sans, Microsoft YaHei, Helvetica Neue,
+              Helvetica, Arial, sans-serif;
+          }
+        }
+      }
+    }
+
     .tb-login-form {
       @media #{$mat-gt-xs} {
-        width: 550px !important;
+        width: 400px !important;
       }
 
       .forgot-password {
         padding: 0 0.5em 1em;
         .tb-reset-password {
+          color: #165dff;
           padding: 0 6px;
         }
       }
 
-      .tb-action-button{
-        padding: 20px 0 16px;
+      .tb-action-button {
+        button {
+          background-color: #165dff;
+          color: #ffffff;
+        }
+        padding: 0;
+      }
+      .layout-padding {
+        padding: 20px;
+        color: #999999;
       }
     }
 
-    .oauth-container{
+    .oauth-container {
       padding: 0;
 
       .container-divider {
@@ -54,7 +104,7 @@
           flex: 1;
         }
 
-        .mat-divider-horizontal{
+        .mat-divider-horizontal {
           position: relative;
         }
 
@@ -64,7 +114,7 @@
         }
       }
 
-      .material-icons{
+      .material-icons {
         width: 20px;
         min-width: 20px;
       }
@@ -85,4 +135,3 @@
     }
   }
 }
-

@@ -17,7 +17,7 @@
   &.mat-button-toggle-group-appearance-standard {
     border: none;
     border-radius: 18px;
-    .mat-button-toggle+.mat-button-toggle {
+    .mat-button-toggle + .mat-button-toggle {
       border-left: none;
     }
   }
@@ -42,7 +42,7 @@
     margin: 2px;
   }
   .mat-button-toggle-checked .mat-button-toggle-button {
-    background-color: #305680;
+    background-color: #165dff;
     color: #fff;
     border-radius: 16px;
     margin-left: 2px;
@@ -53,7 +53,10 @@
     font-size: 16px;
     font-weight: 500;
   }
-  .mat-button-toggle-checked.mat-button-toggle-appearance-standard:not(.mat-button-toggle-disabled):hover .mat-button-toggle-focus-overlay {
-    opacity: .01;
+  .mat-button-toggle-checked.mat-button-toggle-appearance-standard:not(
+      .mat-button-toggle-disabled
+    ):hover
+    .mat-button-toggle-focus-overlay {
+    opacity: 0.01;
   }
 }

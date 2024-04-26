@@ -18,19 +18,20 @@
 }
 
 :host ::ng-deep {
-
   .tb-side-menu,
   .tb-side-menu ul {
-    padding: 0;
+    padding: 0 30px;
     margin-top: 0;
     list-style: none;
   }
 
   .tb-side-menu > li {
-    border-bottom: 1px solid rgba(0, 0, 0, .12);
+    // border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   }
 
   a.mat-mdc-button.mat-mdc-button-base {
+    font-family: "Alibaba";
+    font-weight: 500;
     display: inline-flex;
     width: 100%;
     height: 40px;
@@ -41,19 +42,29 @@
     padding: 0 16px;
     &:hover {
       border-bottom: none;
-      background-color: rgba(255,255,255,0.08);
+      background-color: rgba(255, 255, 255, 0.08);
     }
     &:focus {
       border-bottom: none;
     }
     &.tb-active {
-      background-color: rgba(255, 255, 255, .15);
+      font-family: "Alibaba-Medium";
+      font-weight: 500;
+      background-color: #f5f9ff;
+      border-radius: 4px;
+      .mat-icon {
+        color: #3570ff;
+      }
+      .mdc-button__label {
+        color: #3570ff;
+      }
     }
     mat-icon {
       margin-right: 8px;
       margin-left: 0;
       min-width: 1.125rem;
       min-height: 1.125rem;
+      color: rgb(134, 144, 156);
     }
     span.mdc-button__label {
       width: 100%;
@@ -61,6 +72,7 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       display: inline-flex;
+      color: #383838;
       & > span {
         overflow: hidden;
         text-overflow: ellipsis;
@@ -69,6 +81,14 @@
         padding-top: 12px;
         padding-bottom: 12px;
       }
+    }
+  }
+  ul.tb-menu-toggle-list a.mat-mdc-button-base {
+    font-family: "Alibaba";
+    font-weight: 400 !important;
+    .mdc-button__label,
+    mat-icon {
+      color: #adb1ba;
     }
   }
 }

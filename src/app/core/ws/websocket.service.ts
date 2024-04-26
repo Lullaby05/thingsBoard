@@ -14,24 +14,29 @@
 /// limitations under the License.
 ///
 
-import { CmdWrapper, WsService, WsSubscriber } from '@shared/models/websocket/websocket.models';
-import { select, Store } from '@ngrx/store';
-import { AppState } from '@core/core.state';
-import { AuthService } from '@core/auth/auth.service';
-import { NgZone } from '@angular/core';
-import { selectIsAuthenticated } from '@core/auth/auth.selectors';
-import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
-import { WebsocketNotificationMsg } from '@shared/models/websocket/notification-ws.models';
-import { CmdUpdateMsg } from '@shared/models/telemetry/telemetry.models';
-import { ActionNotificationShow } from '@core/notification/notification.actions';
+import {
+  CmdWrapper,
+  WsService,
+  WsSubscriber,
+} from "@shared/models/websocket/websocket.models";
+import { select, Store } from "@ngrx/store";
+import { AppState } from "@core/core.state";
+import { AuthService } from "@core/auth/auth.service";
+import { NgZone } from "@angular/core";
+import { selectIsAuthenticated } from "@core/auth/auth.selectors";
+import { webSocket, WebSocketSubject } from "rxjs/webSocket";
+import { WebsocketNotificationMsg } from "@shared/models/websocket/notification-ws.models";
+import { CmdUpdateMsg } from "@shared/models/telemetry/telemetry.models";
+import { ActionNotificationShow } from "@core/notification/notification.actions";
 import Timeout = NodeJS.Timeout;
 
 const RECONNECT_INTERVAL = 2000;
 const WS_IDLE_TIMEOUT = 90000;
 const MAX_PUBLISH_COMMANDS = 10;
 
-export abstract class WebsocketService<T extends WsSubscriber> implements WsService<T> {
-
+export abstract class WebsocketService<T extends WsSubscriber>
+  implements WsService<T>
+{
   isActive = false;
   isOpening = false;
   isOpened = false;
@@ -50,31 +55,31 @@ export abstract class WebsocketService<T extends WsSubscriber> implements WsServ
 
   dataStream: WebSocketSubject<CmdWrapper | CmdUpdateMsg>;
 
-  errorName = 'WebSocket Error';
+  errorName = "WebSocket Error";
 
-  protected constructor(protected store: Store<AppState>,
-                        protected authService: AuthService,
-                        protected ngZone: NgZone,
-                        protected apiEndpoint: string,
-                        protected cmdWrapper: CmdWrapper,
-                        protected window: Window) {
-    this.store.pipe(select(selectIsAuthenticated)).subscribe(
-      () => {
-        this.reset(true);
-      }
-    );
+  protected constructor(
+    protected store: Store<AppState>,
+    protected authService: AuthService,
+    protected ngZone: NgZone,
+    protected apiEndpoint: string,
+    protected cmdWrapper: CmdWrapper,
+    protected window: Window
+  ) {
+    this.store.pipe(select(selectIsAuthenticated)).subscribe(() => {
+      this.reset(true);
+    });
 
     let port = this.window.location.port;
-    if (this.window.location.protocol === 'https:') {
+    if (this.window.location.protocol === "https:") {
       if (!port) {
-        port = '443';
+        port = "443";
       }
-      this.notificationUri = 'wss:';
+      this.notificationUri = "wss:";
     } else {
       if (!port) {
-        port = '80';
+        port = "80";
       }
-      this.notificationUri = 'ws:';
+      this.notificationUri = "ws:";
     }
     this.notificationUri += `//${this.window.location.hostname}:${port}/${apiEndpoint}`;
   }
@@ -94,7 +99,9 @@ export abstract class WebsocketService<T extends WsSubscriber> implements WsServ
 
   protected publishCommands() {
     while (this.isOpened && this.cmdWrapper.hasCommands()) {
-      this.dataStream.next(this.cmdWrapper.preparePublishCommands(MAX_PUBLISH_COMMANDS));
+      this.dataStream.next(
+        this.cmdWrapper.preparePublishCommands(MAX_PUBLISH_COMMANDS)
+      );
       this.checkToClose();
     }
     this.tryOpenSocket();
@@ -104,7 +111,9 @@ export abstract class WebsocketService<T extends WsSubscriber> implements WsServ
     if (this.subscribersCount === 0 && this.isOpened) {
       if (!this.socketCloseTimer) {
         this.socketCloseTimer = setTimeout(
-          () => this.closeSocket(), WS_IDLE_TIMEOUT);
+          () => this.closeSocket(),
+          WS_IDLE_TIMEOUT
+        );
       }
     }
   }
@@ -144,7 +153,7 @@ export abstract class WebsocketService<T extends WsSubscriber> implements WsServ
             error: () => {
               this.isOpening = false;
               this.authService.logout(true, true);
-            }
+            },
           });
         }
       }
@@ -157,21 +166,19 @@ export abstract class WebsocketService<T extends WsSubscriber> implements WsServ
 
   private openSocket(token: string) {
     const uri = `${this.notificationUri}?token=${token}`;
-    this.dataStream = webSocket(
-      {
-        url: uri,
-        openObserver: {
-          next: () => {
-            this.onOpen();
-          }
+    this.dataStream = webSocket({
+      url: uri,
+      openObserver: {
+        next: () => {
+          this.onOpen();
         },
-        closeObserver: {
-          next: (e: CloseEvent) => {
-            this.onClose(e);
-          }
-        }
-      }
-    );
+      },
+      closeObserver: {
+        next: (e: CloseEvent) => {
+          this.onClose(e);
+        },
+      },
+    });
 
     this.dataStream.subscribe({
       next: (message) => {
@@ -181,7 +188,7 @@ export abstract class WebsocketService<T extends WsSubscriber> implements WsServ
       },
       error: (error) => {
         this.onError(error);
-      }
+      },
     });
   }
 
@@ -194,12 +201,10 @@ export abstract class WebsocketService<T extends WsSubscriber> implements WsServ
     }
     if (this.isReconnect) {
       this.isReconnect = false;
-      this.reconnectSubscribers.forEach(
-        (reconnectSubscriber) => {
-          reconnectSubscriber.onReconnected();
-          this.subscribe(reconnectSubscriber);
-        }
-      );
+      this.reconnectSubscribers.forEach((reconnectSubscriber) => {
+        reconnectSubscriber.onReconnected();
+        this.subscribe(reconnectSubscriber);
+      });
       this.reconnectSubscribers.clear();
     } else {
       this.publishCommands();
@@ -217,14 +222,20 @@ export abstract class WebsocketService<T extends WsSubscriber> implements WsServ
 
   private onError(errorEvent) {
     if (errorEvent) {
-      console.warn('WebSocket error event', errorEvent);
+      console.warn("WebSocket error event", errorEvent);
     }
     this.isOpening = false;
   }
 
   private onClose(closeEvent: CloseEvent) {
-    if (closeEvent && closeEvent.code > 1001 && closeEvent.code !== 1006
-      && closeEvent.code !== 1011 && closeEvent.code !== 1012 && closeEvent.code !== 4500) {
+    if (
+      closeEvent &&
+      closeEvent.code > 1001 &&
+      closeEvent.code !== 1006 &&
+      closeEvent.code !== 1011 &&
+      closeEvent.code !== 1012 &&
+      closeEvent.code !== 4500
+    ) {
       this.showWsError(closeEvent.code, closeEvent.reason);
     }
     this.isOpening = false;
@@ -232,18 +243,19 @@ export abstract class WebsocketService<T extends WsSubscriber> implements WsServ
     if (this.isActive) {
       if (!this.isReconnect) {
         this.reconnectSubscribers.clear();
-        this.subscribersMap.forEach(
-          (subscriber) => {
-            this.reconnectSubscribers.add(subscriber);
-          }
-        );
+        this.subscribersMap.forEach((subscriber) => {
+          this.reconnectSubscribers.add(subscriber);
+        });
         this.reset(false);
         this.isReconnect = true;
       }
       if (this.reconnectTimer) {
         clearTimeout(this.reconnectTimer);
       }
-      this.reconnectTimer = setTimeout(() => this.tryOpenSocket(), RECONNECT_INTERVAL);
+      this.reconnectTimer = setTimeout(
+        () => this.tryOpenSocket(),
+        RECONNECT_INTERVAL
+      );
     }
   }
 
@@ -252,10 +264,11 @@ export abstract class WebsocketService<T extends WsSubscriber> implements WsServ
     if (!message) {
       message += `${this.errorName}: error code - ${errorCode}.`;
     }
-    this.store.dispatch(new ActionNotificationShow(
-      {
-        message, type: 'error'
-      }));
+    this.store.dispatch(
+      new ActionNotificationShow({
+        message,
+        type: "error",
+      })
+    );
   }
-
 }

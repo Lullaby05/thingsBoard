@@ -27,7 +27,8 @@
   }
   mat-sidenav.tb-site-sidenav {
     width: 250px;
-    @media (max-width:456px) {
+    box-shadow: none;
+    @media (max-width: 456px) {
       width: calc(100% - 56px);
     }
     .tb-nav-header {
@@ -41,15 +42,19 @@
         z-index: 2;
         flex-shrink: 0;
         white-space: nowrap;
-        border-bottom: 1px solid rgba(0, 0, 0, .12);
+        // border-bottom: 1px solid rgba(0, 0, 0, 0.12);
         & > div {
-          height: 64px;
+          padding-bottom: 10px;
+          // height: 64px;
           .tb-logo-title {
-            width: auto;
-            max-width: 100%;
-            height: 36px;
-            max-height: 100%;
-            margin: auto;
+            padding: 10px;
+            width: 110px;
+            margin: 0 auto;
+          }
+          .tb-title {
+            padding: 10px;
+            width: 172px;
+            margin: 0 auto;
           }
         }
       }
@@ -58,9 +63,13 @@
       overflow-y: auto;
       height: inherit;
       padding: 0;
+      &::-webkit-scrollbar {
+        width: 0;
+      }
     }
   }
   .tb-primary-toolbar {
+    justify-content: flex-end;
     z-index: 2;
     h1 {
       font-size: 24px !important;

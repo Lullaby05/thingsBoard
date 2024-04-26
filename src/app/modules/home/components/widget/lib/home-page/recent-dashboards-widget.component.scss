@@ -47,7 +47,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: #305680;
+      background: #165dff;
       -webkit-mask-image: url(/assets/home/no_data_bg.svg);
       -webkit-mask-repeat: no-repeat;
       mask-image: url(/assets/home/no_data_bg.svg);
@@ -77,7 +77,7 @@
     &:first-child {
       padding: 0 12px;
     }
-    &:nth-child(n+2):nth-last-child(n+2) {
+    &:nth-child(n + 2):nth-last-child(n + 2) {
       padding: 0 28px 0 0;
     }
   }
@@ -93,12 +93,15 @@
 }
 
 :host ::ng-deep {
-  .mat-mdc-cell, .mat-mdc-header-cell, .mdc-data-table__row:last-child .mdc-data-table__cell {
+  .mat-mdc-cell,
+  .mat-mdc-header-cell,
+  .mdc-data-table__row:last-child .mdc-data-table__cell {
     border-bottom: none;
   }
 
   .mat-mdc-table {
-    .mdc-data-table__row, .mdc-data-table__header-row {
+    .mdc-data-table__row,
+    .mdc-data-table__header-row {
       height: 40px;
       @media #{$mat-md-lg} {
         height: 34px;
@@ -110,17 +113,20 @@
     }
   }
 
-  .tb-cell:nth-child(n+2):nth-last-child(n+2) {
+  .tb-cell:nth-child(n + 2):nth-last-child(n + 2) {
     padding: 0 28px 0 0;
   }
 
-  .mat-mdc-row:not(.mat-row-select) .mat-mdc-cell:nth-child(n+2):nth-last-child(n+2) {
+  .mat-mdc-row:not(.mat-row-select)
+    .mat-mdc-cell:nth-child(n + 2):nth-last-child(n + 2) {
     @media #{$mat-md-lg} {
       padding: 0 12px 0 0;
     }
   }
 
-  .mat-mdc-header-cell, .mat-mdc-cell, .tb-cell {
+  .mat-mdc-header-cell,
+  .mat-mdc-cell,
+  .tb-cell {
     &.star-cell {
       width: 40px;
       min-width: 40px;
@@ -156,7 +162,8 @@
   .mat-mdc-cell.title {
     max-width: 0;
   }
-  .mat-mdc-cell, .tb-cell {
+  .mat-mdc-cell,
+  .tb-cell {
     font-weight: 400;
     font-size: 14px;
     line-height: 20px;
@@ -172,7 +179,8 @@
       a {
         color: rgba(0, 0, 0, 0.87);
         border-bottom: none;
-        &:hover, &:focus {
+        &:hover,
+        &:focus {
           border-bottom: none;
         }
       }
@@ -189,9 +197,9 @@
         color: rgba(0, 0, 0, 0.18);
       }
       &.starred {
-        color: #FAE205;
+        color: #fae205;
         &:hover {
-          color: #CDBD2C;
+          color: #cdbd2c;
         }
       }
     }
@@ -208,7 +216,8 @@
         line-height: 16px;
       }
     }
-    .mat-mdc-text-field-wrapper.mdc-text-field--outlined .mat-mdc-form-field-infix {
+    .mat-mdc-text-field-wrapper.mdc-text-field--outlined
+      .mat-mdc-form-field-infix {
       padding-top: 4px;
       padding-bottom: 4px;
       min-height: 28px;
@@ -220,7 +229,8 @@
       height: 0;
     }
     .mdc-text-field--outlined .mdc-notched-outline {
-      .mdc-notched-outline__leading, .mdc-notched-outline__trailing {
+      .mdc-notched-outline__leading,
+      .mdc-notched-outline__trailing {
         border-top-style: dashed;
         border-bottom-style: dashed;
       }

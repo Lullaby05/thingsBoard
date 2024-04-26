@@ -43,7 +43,6 @@
 }
 
 :host ::ng-deep {
-
   .tb-get-started .mat-vertical-stepper-header {
     border-radius: 12px;
     padding: 12px;
@@ -84,7 +83,8 @@
   }
 
   .tb-get-started .mat-vertical-content {
-    p, li {
+    p,
+    li {
       font-style: normal;
       font-weight: 400;
       font-size: 14px;
@@ -117,15 +117,16 @@
       .tb-getting-started-code {
         .code-wrapper {
           padding: 0;
-          pre[class*=language-] {
+          pre[class*="language-"] {
             margin: 0;
             padding: 9px 38px 9px 16px;
             background: rgba(0, 0, 0, 0.03);
             border-radius: 6px;
             border: none;
           }
-          code[class*="language-"], pre[class*="language-"] {
-            font-family: 'Roboto';
+          code[class*="language-"],
+          pre[class*="language-"] {
+            font-family: "思源黑体", "Roboto";
             font-style: normal;
             font-weight: 400;
             font-size: 12px;
@@ -144,13 +145,14 @@
           button.clipboard-btn {
             right: 0;
             height: 34px;
-            p, div {
+            p,
+            div {
               background: transparent;
             }
             p {
               margin: 0;
               padding: 7px;
-              color: #305680;
+              color: #165dff;
             }
             div {
               top: 0;
@@ -166,7 +168,7 @@
                 display: block;
                 width: 18px;
                 height: 18px;
-                background: #305680;
+                background: #165dff;
                 -webkit-mask-image: url(/assets/copy-code-icon.svg);
                 -webkit-mask-repeat: no-repeat;
                 mask-image: url(/assets/copy-code-icon.svg);
@@ -200,7 +202,8 @@
     }
 
     .tb-get-started .mat-vertical-content {
-      p, li {
+      p,
+      li {
         font-size: 12px;
         line-height: 16px;
         letter-spacing: 0.25px;

@@ -14,35 +14,62 @@
  * limitations under the License.
  */
 @font-face {
-  font-family: 'Material Icons';
+  font-family: "Material Icons";
   font-style: normal;
   font-weight: 400;
-  src: local('Material Icons'),
-       local('MaterialIcons-Regular'),
-       url(MaterialIcons-Regular.ttf) format('truetype');
+  src: local("Material Icons"), local("MaterialIcons-Regular"),
+    url(MaterialIcons-Regular.ttf) format("truetype");
 }
 
 @font-face {
-  font-family: 'Material Icons Round';
+  font-family: "Material Icons Round";
   font-style: normal;
   font-weight: 400;
-  src: local('Material Icons Round'),
-  local('MaterialIconsRound-Regular'),
-  url(MaterialIconsRound-Regular.otf) format('truetype');
+  src: local("Material Icons Round"), local("MaterialIconsRound-Regular"),
+    url(MaterialIconsRound-Regular.otf) format("truetype");
+}
+
+@font-face {
+  font-family: "Alibaba";
+  src: url("./Alibaba-PuHuiTi-Regular.otf");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Alibaba-Medium";
+  src: url("./Alibaba-PuHuiTi-Medium.otf");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "思源黑体";
+  src: url("./SourceHanSansSC-Regular-2.otf");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "思源黑体 Medium";
+  src: url("./SourceHanSansOLD-Medium-2.otf");
+  font-weight: normal;
+  font-style: normal;
 }
 
 .material-icons {
-  font-family: 'Material Icons';
+  font-family: "Material Icons";
 }
 
 .material-icons-round {
-  font-family: 'Material Icons Round';
+  font-family: "Material Icons Round";
 }
 
-.material-icons, .material-icons-round {
+.material-icons,
+.material-icons-round {
   font-weight: normal;
   font-style: normal;
-  font-size: 24px;  /* Preferred icon size */
+  font-size: 24px; /* Preferred icon size */
   display: inline-block;
   line-height: 1;
   text-transform: none;
@@ -60,5 +87,5 @@
   -moz-osx-font-smoothing: grayscale;
 
   /* Support for IE. */
-  font-feature-settings: 'liga';
+  font-feature-settings: "liga";
 }

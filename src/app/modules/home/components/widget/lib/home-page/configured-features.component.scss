@@ -17,7 +17,6 @@
 @import "../../../../../../../scss/constants";
 
 :host {
-
   .tb-title {
     margin-top: 8px;
   }
@@ -46,7 +45,7 @@
     flex-direction: column;
     justify-content: center;
     padding: 12px;
-    background: #FFFFFF;
+    background: #ffffff;
     border: 1px solid rgba(0, 0, 0, 0.05);
     box-shadow: 0 5px 16px rgba(0, 0, 0, 0.04);
     border-radius: 10px;
@@ -73,13 +72,13 @@
     }
     .tb-feature-status {
       display: inline-block;
-      font-family: 'Material Icons Round';
+      font-family: "思源黑体", "Material Icons Round";
       font-size: 20px;
       line-height: 20px;
       color: rgba(0, 0, 0, 0.12);
       font-weight: 600;
       position: relative;
-      background: #F4F4F4;
+      background: #f4f4f4;
       border-radius: 4px;
       width: 24px;
       height: 24px;
@@ -97,7 +96,7 @@
     &.configured {
       .tb-feature-status {
         color: #198038;
-        background: #F3F6FA;
+        background: #f3f6fa;
       }
     }
   }

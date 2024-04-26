@@ -15,9 +15,11 @@
  */
 .tb-nav-tree-container {
   padding: 15px;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: "思源黑体", Roboto, "Helvetica Neue", sans-serif;
 
-  &.jstree-proton, &.jstree-proton-small, &.jstree-proton-large {
+  &.jstree-proton,
+  &.jstree-proton-small,
+  &.jstree-proton-large {
     .jstree-node,
     .jstree-icon {
       background-image: url("../../../assets/jstree/tb32px.png");
@@ -33,7 +35,6 @@
   }
 
   &.jstree-proton {
-
     .jstree-themeicon-custom {
       &.material-icons {
         font-size: 18px;
@@ -45,7 +46,8 @@
     }
 
     .jstree-file {
-      background: url("../../../assets/jstree/tb32px.png") -101px -69px no-repeat;
+      background: url("../../../assets/jstree/tb32px.png") -101px -69px
+        no-repeat;
     }
 
     .jstree-folder {
@@ -54,7 +56,6 @@
   }
 
   &.jstree-proton-small {
-
     .jstree-themeicon-custom {
       &.material-icons {
         font-size: 14px;
@@ -66,7 +67,8 @@
     }
 
     .jstree-file {
-      background: url("../../../assets/jstree/tb32px.png") -103px -71px no-repeat;
+      background: url("../../../assets/jstree/tb32px.png") -103px -71px
+        no-repeat;
     }
 
     .jstree-folder {
@@ -75,7 +77,6 @@
   }
 
   &.jstree-proton-large {
-
     .jstree-themeicon-custom {
       &.material-icons {
         font-size: 24px;
@@ -145,7 +146,9 @@
 }
 
 #jstree-dnd {
-  &.jstree-proton, &.jstree-proton-small, &.jstree-proton-large {
+  &.jstree-proton,
+  &.jstree-proton-small,
+  &.jstree-proton-large {
     .jstree-ok,
     .jstree-er {
       background-image: url("../../../assets/jstree/tb32px.png");
@@ -252,7 +255,8 @@
         background-size: 120px 240px;
       }
       .jstree-folder {
-        background: url("../../../assets/jstree/tb40px.png") -40px -40px no-repeat;
+        background: url("../../../assets/jstree/tb40px.png") -40px -40px
+          no-repeat;
         background-size: 120px 240px;
       }
 
@@ -285,8 +289,8 @@
       .jstree-wholerow {
         height: 40px;
         background: #ebebeb;
-        border-top: 1px solid rgba(255, 255, 255, .7);
-        border-bottom: 1px solid rgba(64, 64, 64, .2);
+        border-top: 1px solid rgba(255, 255, 255, 0.7);
+        border-bottom: 1px solid rgba(64, 64, 64, 0.2);
       }
 
       .jstree-wholerow-hovered {
@@ -350,7 +354,7 @@
 
 .tb-nav-tree .mat-mdc-button.tb-active {
   font-weight: 500;
-  background-color: rgba(255, 255, 255, .15);
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 .tb-nav-tree,
@@ -388,4 +392,3 @@
     }
   }
 }
-

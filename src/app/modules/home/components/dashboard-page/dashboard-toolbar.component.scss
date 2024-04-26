@@ -61,6 +61,8 @@ tb-dashboard-toolbar {
   .mat-fab-toolbar {
     mat-fab-trigger {
       .mat-mdc-fab {
+        background: transparent;
+        background-color: transparent;
         width: 36px;
         height: 36px;
         margin: 4px 0 0 4px;
@@ -68,7 +70,6 @@ tb-dashboard-toolbar {
     }
 
     &.is-fullscreen {
-
       .mat-fab-toolbar-wrapper {
         height: $mobile-toolbar-height-total;
 

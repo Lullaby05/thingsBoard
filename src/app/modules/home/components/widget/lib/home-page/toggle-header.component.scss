@@ -32,7 +32,8 @@
       color: rgba(0, 0, 0, 0.38);
       background: transparent;
 
-      .mat-button-toggle-focus-overlay, .mat-button-toggle-ripple {
+      .mat-button-toggle-focus-overlay,
+      .mat-button-toggle-ripple {
         border-radius: 20px;
       }
       .mat-button-toggle-button {
@@ -46,9 +47,9 @@
       }
       &.mat-button-toggle-checked {
         .mat-button-toggle-button {
-          background: #F3F6FA;
-          color: #305680;
-          border: 1px solid #305680;
+          background: #f3f6fa;
+          color: #165dff;
+          border: 1px solid #165dff;
           border-radius: 20px;
 
           .mat-button-toggle-label-content {
@@ -87,7 +88,8 @@
       line-height: 16px;
       font-size: 12px;
     }
-    .mat-mdc-text-field-wrapper.mdc-text-field--outlined .mat-mdc-form-field-infix {
+    .mat-mdc-text-field-wrapper.mdc-text-field--outlined
+      .mat-mdc-form-field-infix {
       min-height: 0;
       width: auto;
       padding-top: 8px;
@@ -117,7 +119,7 @@
         display: none;
       }
       &:after {
-        font-family: 'Material Icons';
+        font-family: "Material Icons";
         content: "expand_more";
         position: absolute;
         display: inline-block;

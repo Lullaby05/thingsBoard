@@ -51,7 +51,7 @@
 
   .tb-hint-available-params {
     border-radius: 6px;
-    background-color: rgba(48, 86, 128, 0.04);
+    background-color: rgba(22, 93, 255, 0.04);
     margin-bottom: 8px;
     padding: 8px 16px;
 
@@ -108,11 +108,11 @@
   .preview-group {
     padding: 16px;
     margin-bottom: 10px;
-    border: 1px groove rgba(0, 0, 0, .12);
+    border: 1px groove rgba(0, 0, 0, 0.12);
     border-radius: 4px;
 
     &.notification {
-      background-color: #F3F6FA;
+      background-color: #f3f6fa;
     }
 
     .group-title {
@@ -120,7 +120,7 @@
       font-size: 14px;
     }
 
-    &> div:not(:last-child) {
+    & > div:not(:last-child) {
       margin-bottom: 12px;
     }
 
@@ -201,7 +201,7 @@
       .mat-horizontal-content-container {
         height: 680px;
         max-height: 100%;
-        width: 100%;;
+        width: 100%;
         overflow-y: auto;
         scrollbar-gutter: stable;
         @media #{$mat-gt-sm} {
@@ -260,8 +260,11 @@
       font-weight: 500;
     }
 
-    .mat-button-toggle-checked.mat-button-toggle-appearance-standard:not(.mat-button-toggle-disabled):hover .mat-button-toggle-focus-overlay {
-      opacity: .01;
+    .mat-button-toggle-checked.mat-button-toggle-appearance-standard:not(
+        .mat-button-toggle-disabled
+      ):hover
+      .mat-button-toggle-focus-overlay {
+      opacity: 0.01;
     }
   }
 

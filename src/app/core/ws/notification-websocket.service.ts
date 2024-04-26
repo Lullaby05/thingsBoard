@@ -14,11 +14,11 @@
 /// limitations under the License.
 ///
 
-import { Inject, Injectable, NgZone } from '@angular/core';
-import { Store } from '@ngrx/store';
-import { AppState } from '@core/core.state';
-import { AuthService } from '@core/auth/auth.service';
-import { WINDOW } from '@core/services/window.service';
+import { Inject, Injectable, NgZone } from "@angular/core";
+import { Store } from "@ngrx/store";
+import { AppState } from "@core/core.state";
+import { AuthService } from "@core/auth/auth.service";
+import { WINDOW } from "@core/services/window.service";
 import {
   isNotificationCountUpdateMsg,
   isNotificationsUpdateMsg,
@@ -31,47 +31,52 @@ import {
   UnreadCountSubCmd,
   UnreadSubCmd,
   UnsubscribeCmd,
-  WebsocketNotificationMsg
-} from '@shared/models/websocket/notification-ws.models';
-import { WebsocketService } from '@core/ws/websocket.service';
-
+  WebsocketNotificationMsg,
+} from "@shared/models/websocket/notification-ws.models";
+import { WebsocketService } from "@core/ws/websocket.service";
 
 // @dynamic
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class NotificationWebsocketService extends WebsocketService<NotificationSubscriber> {
-
   cmdWrapper: NotificationPluginCmdWrapper;
 
-  constructor(protected store: Store<AppState>,
-              protected authService: AuthService,
-              protected ngZone: NgZone,
-              @Inject(WINDOW) protected window: Window) {
-    super(store, authService, ngZone, 'api/ws/plugins/notifications', new NotificationPluginCmdWrapper(), window);
-    this.errorName = 'WebSocket Notification Error';
+  constructor(
+    protected store: Store<AppState>,
+    protected authService: AuthService,
+    protected ngZone: NgZone,
+    @Inject(WINDOW) protected window: Window
+  ) {
+    super(
+      store,
+      authService,
+      ngZone,
+      "api/ws/plugins/notifications",
+      new NotificationPluginCmdWrapper(),
+      window
+    );
+    this.errorName = "WebSocket Notification Error";
   }
 
   public subscribe(subscriber: NotificationSubscriber) {
     this.isActive = true;
-    subscriber.subscriptionCommands.forEach(
-      (subscriptionCommand) => {
-        const cmdId = this.nextCmdId();
-        this.subscribersMap.set(cmdId, subscriber);
-        subscriptionCommand.cmdId = cmdId;
-        if (subscriptionCommand instanceof UnreadCountSubCmd) {
-          this.cmdWrapper.unreadCountSubCmd = subscriptionCommand;
-        } else if (subscriptionCommand instanceof UnreadSubCmd) {
-          this.cmdWrapper.unreadSubCmd = subscriptionCommand;
-        } else if (subscriptionCommand instanceof MarkAsReadCmd) {
-          this.cmdWrapper.markAsReadCmd = subscriptionCommand;
-          this.subscribersMap.delete(cmdId);
-        } else if (subscriptionCommand instanceof MarkAllAsReadCmd) {
-          this.cmdWrapper.markAllAsReadCmd = subscriptionCommand;
-          this.subscribersMap.delete(cmdId);
-        }
+    subscriber.subscriptionCommands.forEach((subscriptionCommand) => {
+      const cmdId = this.nextCmdId();
+      this.subscribersMap.set(cmdId, subscriber);
+      subscriptionCommand.cmdId = cmdId;
+      if (subscriptionCommand instanceof UnreadCountSubCmd) {
+        this.cmdWrapper.unreadCountSubCmd = subscriptionCommand;
+      } else if (subscriptionCommand instanceof UnreadSubCmd) {
+        this.cmdWrapper.unreadSubCmd = subscriptionCommand;
+      } else if (subscriptionCommand instanceof MarkAsReadCmd) {
+        this.cmdWrapper.markAsReadCmd = subscriptionCommand;
+        this.subscribersMap.delete(cmdId);
+      } else if (subscriptionCommand instanceof MarkAllAsReadCmd) {
+        this.cmdWrapper.markAllAsReadCmd = subscriptionCommand;
+        this.subscribersMap.delete(cmdId);
       }
-    );
+    });
     if (this.cmdWrapper.unreadCountSubCmd || this.cmdWrapper.unreadSubCmd) {
       this.subscribersCount++;
     }
@@ -80,33 +85,34 @@ export class NotificationWebsocketService extends WebsocketService<NotificationS
 
   public update(subscriber: NotificationSubscriber) {
     if (!this.isReconnect) {
-      subscriber.subscriptionCommands.forEach(
-        (subscriptionCommand) => {
-          if (subscriptionCommand.cmdId && subscriptionCommand instanceof UnreadSubCmd) {
-            this.cmdWrapper.unreadSubCmd = subscriptionCommand;
-          }
+      subscriber.subscriptionCommands.forEach((subscriptionCommand) => {
+        if (
+          subscriptionCommand.cmdId &&
+          subscriptionCommand instanceof UnreadSubCmd
+        ) {
+          this.cmdWrapper.unreadSubCmd = subscriptionCommand;
         }
-      );
+      });
       this.publishCommands();
     }
   }
 
   public unsubscribe(subscriber: NotificationSubscriber) {
     if (this.isActive) {
-      subscriber.subscriptionCommands.forEach(
-        (subscriptionCommand) => {
-          if (subscriptionCommand instanceof UnreadCountSubCmd
-              || subscriptionCommand instanceof UnreadSubCmd) {
-            const unreadCountUnsubscribeCmd = new UnsubscribeCmd();
-            unreadCountUnsubscribeCmd.cmdId = subscriptionCommand.cmdId;
-            this.cmdWrapper.unsubCmd = unreadCountUnsubscribeCmd;
-          }
-          const cmdId = subscriptionCommand.cmdId;
-          if (cmdId) {
-            this.subscribersMap.delete(cmdId);
-          }
+      subscriber.subscriptionCommands.forEach((subscriptionCommand) => {
+        if (
+          subscriptionCommand instanceof UnreadCountSubCmd ||
+          subscriptionCommand instanceof UnreadSubCmd
+        ) {
+          const unreadCountUnsubscribeCmd = new UnsubscribeCmd();
+          unreadCountUnsubscribeCmd.cmdId = subscriptionCommand.cmdId;
+          this.cmdWrapper.unsubCmd = unreadCountUnsubscribeCmd;
         }
-      );
+        const cmdId = subscriptionCommand.cmdId;
+        if (cmdId) {
+          this.subscribersMap.delete(cmdId);
+        }
+      });
       this.reconnectSubscribers.delete(subscriber);
       this.subscribersCount--;
       this.publishCommands();
@@ -118,7 +124,9 @@ export class NotificationWebsocketService extends WebsocketService<NotificationS
     if (isNotificationCountUpdateMsg(message)) {
       subscriber = this.subscribersMap.get(message.cmdId);
       if (subscriber) {
-        subscriber.onNotificationCountUpdate(new NotificationCountUpdate(message));
+        subscriber.onNotificationCountUpdate(
+          new NotificationCountUpdate(message)
+        );
       }
     } else if (isNotificationsUpdateMsg(message)) {
       subscriber = this.subscribersMap.get(message.cmdId);
@@ -127,5 +135,4 @@ export class NotificationWebsocketService extends WebsocketService<NotificationS
       }
     }
   }
-
 }

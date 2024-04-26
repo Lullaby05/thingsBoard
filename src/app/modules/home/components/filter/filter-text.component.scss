@@ -42,14 +42,17 @@
       padding-right: 4px;
       padding-left: 4px;
     }
-    .tb-filter-entity-key, .tb-filter-value, .tb-filter-dynamic-source {
+    .tb-filter-entity-key,
+    .tb-filter-value,
+    .tb-filter-dynamic-source {
       font-weight: bold;
-      border: 1px groove rgba(0, 0, 0, .25);
+      border: 1px groove rgba(0, 0, 0, 0.25);
       border-radius: 4px;
       padding-left: 4px;
       padding-right: 4px;
     }
-    .tb-filter-entity-key, .tb-filter-value {
+    .tb-filter-entity-key,
+    .tb-filter-value {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -58,7 +61,7 @@
     .tb-filter-dynamic-source {
     }
     .tb-filter-entity-key {
-      color: #305680;
+      color: #165dff;
     }
     .tb-filter-value {
       color: #ff5722;
@@ -70,12 +73,14 @@
       font-weight: bold;
     }
     .tb-filter-dynamic-value {
-      .tb-filter-dynamic-source, .tb-filter-value {
+      .tb-filter-dynamic-source,
+      .tb-filter-value {
         color: #0c959c;
       }
     }
     .tb-filter-bracket {
-      .tb-left-bracket, .tb-right-bracket {
+      .tb-left-bracket,
+      .tb-right-bracket {
         font-size: 1.2em;
       }
     }

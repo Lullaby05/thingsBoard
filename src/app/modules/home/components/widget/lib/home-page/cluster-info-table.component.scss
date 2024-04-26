@@ -24,30 +24,31 @@
 
   .tb-resource-usage {
     cursor: default;
-    &.tb-status-warn, &.tb-status-critical {
+    &.tb-status-warn,
+    &.tb-status-critical {
       position: relative;
       overflow: visible;
       &:before {
         position: absolute;
         top: 15px;
         left: -24px;
-        font-family: 'Material Icons Round';
+        font-family: "思源黑体", "Material Icons Round";
         font-size: 20px;
         line-height: 1;
       }
     }
     &.tb-status-warn {
-      color: #FAA405;
+      color: #faa405;
       &:before {
         content: "warning";
-        color: #FAA405;
+        color: #faa405;
       }
     }
     &.tb-status-critical {
-      color: #D12730;
+      color: #d12730;
       &:before {
         content: "warning";
-        color: #D12730;
+        color: #d12730;
       }
     }
   }
