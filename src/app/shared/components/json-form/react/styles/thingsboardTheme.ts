@@ -34,7 +34,7 @@ const thingsboardPalette: PaletteOptions = {
   primary: tbIndigo,
   secondary: deepOrange,
   background: {
-    default: "#eee",
+    default: "#f7f8fa",
   },
 };
 

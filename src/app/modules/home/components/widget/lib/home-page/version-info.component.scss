@@ -51,7 +51,7 @@
     &.up-to-date {
       box-shadow: none;
       border: none;
-      background: #F3F6FA;
+      background: #f3f6fa;
       white-space: initial;
       text-align: center;
     }
@@ -69,14 +69,15 @@
       font-size: 11px;
       line-height: 16px;
     }
-    &:hover, &:focus {
+    &:hover,
+    &:focus {
       border-bottom: none;
     }
     &::after {
-      content: 'arrow_forward';
+      content: "arrow_forward";
       display: inline-block;
       transform: rotate(315deg);
-      font-family: 'Material Icons';
+      font-family: "Material Icons";
       font-weight: normal;
       font-style: normal;
       font-size: 18px;

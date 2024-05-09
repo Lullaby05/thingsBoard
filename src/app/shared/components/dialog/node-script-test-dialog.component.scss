@@ -33,7 +33,7 @@
     border: 1px solid #c0c0c0;
   }
   .gutter {
-    background-color: #eee;
+    background-color: #f7f8fa;
     background-repeat: no-repeat;
     background-position: 50%;
   }
@@ -67,7 +67,7 @@
     top: 8px;
     right: 40px;
     z-index: 5;
-    font-size: .8rem;
+    font-size: 0.8rem;
     font-weight: 500;
 
     &.tb-js-function {
@@ -80,7 +80,7 @@
     label {
       padding: 4px;
       color: #00acc1;
-      background: rgba(220, 220, 220, .35);
+      background: rgba(220, 220, 220, 0.35);
       border-radius: 5px;
     }
 
@@ -89,10 +89,10 @@
       min-height: 15px;
       padding: 4px;
       margin: 0;
-      font-size: .8rem;
+      font-size: 0.8rem;
       line-height: 15px;
       color: #7b7b7b;
-      background: rgba(220, 220, 220, .35);
+      background: rgba(220, 220, 220, 0.35);
     }
   }
 

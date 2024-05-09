@@ -26,22 +26,34 @@ import {
   OnChanges,
   OnInit,
   SimpleChanges,
-  ViewChild
-} from '@angular/core';
-import { PageComponent } from '@shared/components/page.component';
-import { Store } from '@ngrx/store';
-import { AppState } from '@core/core.state';
-import { MAX_SAFE_PAGE_SIZE, PageLink, PageQueryParam, TimePageLink } from '@shared/models/page/page-link';
-import { MatDialog } from '@angular/material/dialog';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort, SortDirection } from '@angular/material/sort';
-import { EntitiesDataSource } from '@home/models/datasource/entity-datasource';
-import { catchError, debounceTime, distinctUntilChanged, map, skip, tap } from 'rxjs/operators';
-import { Direction, SortOrder } from '@shared/models/page/sort-order';
-import { forkJoin, fromEvent, merge, Observable, of, Subscription } from 'rxjs';
-import { TranslateService } from '@ngx-translate/core';
-import { BaseData, HasId } from '@shared/models/base-data';
-import { ActivatedRoute, QueryParamsHandling, Router } from '@angular/router';
+  ViewChild,
+} from "@angular/core";
+import { PageComponent } from "@shared/components/page.component";
+import { Store } from "@ngrx/store";
+import { AppState } from "@core/core.state";
+import {
+  MAX_SAFE_PAGE_SIZE,
+  PageLink,
+  PageQueryParam,
+  TimePageLink,
+} from "@shared/models/page/page-link";
+import { MatDialog } from "@angular/material/dialog";
+import { MatPaginator } from "@angular/material/paginator";
+import { MatSort, SortDirection } from "@angular/material/sort";
+import { EntitiesDataSource } from "@home/models/datasource/entity-datasource";
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  map,
+  skip,
+  tap,
+} from "rxjs/operators";
+import { Direction, SortOrder } from "@shared/models/page/sort-order";
+import { forkJoin, fromEvent, merge, Observable, of, Subscription } from "rxjs";
+import { TranslateService } from "@ngx-translate/core";
+import { BaseData, HasId } from "@shared/models/base-data";
+import { ActivatedRoute, QueryParamsHandling, Router } from "@angular/router";
 import {
   CellActionDescriptor,
   CellActionDescriptorType,
@@ -50,30 +62,48 @@ import {
   EntityTableColumn,
   EntityTableConfig,
   GroupActionDescriptor,
-  HeaderActionDescriptor
-} from '@home/models/entity/entities-table-config.models';
-import { EntityTypeTranslation } from '@shared/models/entity-type.models';
-import { DialogService } from '@core/services/dialog.service';
-import { AddEntityDialogComponent } from './add-entity-dialog.component';
-import { AddEntityDialogData, EntityAction } from '@home/models/entity/entity-component.models';
-import { calculateIntervalStartEndTime, HistoryWindowType, Timewindow } from '@shared/models/time/time.models';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { TbAnchorComponent } from '@shared/components/tb-anchor.component';
-import { isDefined, isEmptyStr, isEqual, isString, isUndefined } from '@core/utils';
-import { HasUUID } from '@shared/models/id/has-uuid';
-import { ResizeObserver } from '@juggle/resize-observer';
-import { hidePageSizePixelValue } from '@shared/models/constants';
-import { EntitiesTableAction, IEntitiesTableComponent } from '@home/models/entity/entity-table-component.models';
-import { EntityDetailsPanelComponent } from '@home/components/entity/entity-details-panel.component';
+  HeaderActionDescriptor,
+} from "@home/models/entity/entities-table-config.models";
+import { EntityTypeTranslation } from "@shared/models/entity-type.models";
+import { DialogService } from "@core/services/dialog.service";
+import { AddEntityDialogComponent } from "./add-entity-dialog.component";
+import {
+  AddEntityDialogData,
+  EntityAction,
+} from "@home/models/entity/entity-component.models";
+import {
+  calculateIntervalStartEndTime,
+  HistoryWindowType,
+  Timewindow,
+} from "@shared/models/time/time.models";
+import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
+import { TbAnchorComponent } from "@shared/components/tb-anchor.component";
+import {
+  isDefined,
+  isEmptyStr,
+  isEqual,
+  isString,
+  isUndefined,
+} from "@core/utils";
+import { HasUUID } from "@shared/models/id/has-uuid";
+import { ResizeObserver } from "@juggle/resize-observer";
+import { hidePageSizePixelValue } from "@shared/models/constants";
+import {
+  EntitiesTableAction,
+  IEntitiesTableComponent,
+} from "@home/models/entity/entity-table-component.models";
+import { EntityDetailsPanelComponent } from "@home/components/entity/entity-details-panel.component";
 
 @Component({
-  selector: 'tb-entities-table',
-  templateUrl: './entities-table.component.html',
-  styleUrls: ['./entities-table.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: "tb-entities-table",
+  templateUrl: "./entities-table.component.html",
+  styleUrls: ["./entities-table.component.scss"],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EntitiesTableComponent extends PageComponent implements IEntitiesTableComponent, AfterViewInit, OnInit, OnChanges {
-
+export class EntitiesTableComponent
+  extends PageComponent
+  implements IEntitiesTableComponent, AfterViewInit, OnInit, OnChanges
+{
   @Input()
   entitiesTableConfig: EntityTableConfig<BaseData<HasId>>;
 
@@ -112,14 +142,16 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
   isDetailsOpen = false;
   detailsPanelOpened = new EventEmitter<boolean>();
 
-  @ViewChild('entityTableHeader', {static: true}) entityTableHeaderAnchor: TbAnchorComponent;
+  @ViewChild("entityTableHeader", { static: true })
+  entityTableHeaderAnchor: TbAnchorComponent;
 
-  @ViewChild('searchInput') searchInputField: ElementRef;
+  @ViewChild("searchInput") searchInputField: ElementRef;
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
 
-  @ViewChild('entityDetailsPanel') entityDetailsPanel: EntityDetailsPanelComponent;
+  @ViewChild("entityDetailsPanel")
+  entityDetailsPanel: EntityDetailsPanelComponent;
 
   private updateDataSubscription: Subscription;
   private viewInited = false;
@@ -128,31 +160,41 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
 
   private rxSubscriptions = new Array<Subscription>();
 
-  constructor(protected store: Store<AppState>,
-              public route: ActivatedRoute,
-              public translate: TranslateService,
-              public dialog: MatDialog,
-              private dialogService: DialogService,
-              private domSanitizer: DomSanitizer,
-              private cd: ChangeDetectorRef,
-              private router: Router,
-              private componentFactoryResolver: ComponentFactoryResolver,
-              private elementRef: ElementRef) {
+  hasParams: boolean = false;
+
+  constructor(
+    protected store: Store<AppState>,
+    public route: ActivatedRoute,
+    public translate: TranslateService,
+    public dialog: MatDialog,
+    private dialogService: DialogService,
+    private domSanitizer: DomSanitizer,
+    private cd: ChangeDetectorRef,
+    private router: Router,
+    private componentFactoryResolver: ComponentFactoryResolver,
+    private elementRef: ElementRef
+  ) {
     super(store);
+    this.route.params.subscribe((val) => {
+      if (Object.keys(val).length) {
+        this.hasParams = true;
+      }
+    });
   }
 
   ngOnInit() {
     if (this.entitiesTableConfig) {
       this.init(this.entitiesTableConfig);
     } else {
-      this.rxSubscriptions.push(this.route.data.subscribe(
-        (data) => {
+      this.rxSubscriptions.push(
+        this.route.data.subscribe((data) => {
           this.init(data.entitiesTableConfig);
-        }
-      ));
+        })
+      );
     }
     this.widgetResize$ = new ResizeObserver(() => {
-      const showHidePageSize = this.elementRef.nativeElement.offsetWidth < hidePageSizePixelValue;
+      const showHidePageSize =
+        this.elementRef.nativeElement.offsetWidth < hidePageSizePixelValue;
       if (showHidePageSize !== this.hidePageSize) {
         this.hidePageSize = showHidePageSize;
         this.cd.markForCheck();
@@ -175,7 +217,7 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     for (const propName of Object.keys(changes)) {
       const change = changes[propName];
       if (!change.firstChange && change.currentValue !== change.previousValue) {
-        if (propName === 'entitiesTableConfig' && change.currentValue) {
+        if (propName === "entitiesTableConfig" && change.currentValue) {
           this.init(change.currentValue);
         }
       }
@@ -187,7 +229,10 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     this.entitiesTableConfig = entitiesTableConfig;
     this.pageMode = this.entitiesTableConfig.pageMode;
     if (this.entitiesTableConfig.headerComponent) {
-      const componentFactory = this.componentFactoryResolver.resolveComponentFactory(this.entitiesTableConfig.headerComponent);
+      const componentFactory =
+        this.componentFactoryResolver.resolveComponentFactory(
+          this.entitiesTableConfig.headerComponent
+        );
       const viewContainerRef = this.entityTableHeaderAnchor.viewContainerRef;
       viewContainerRef.clear();
       const componentRef = viewContainerRef.createComponent(componentFactory);
@@ -198,33 +243,38 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     this.entitiesTableConfig.setTable(this);
     this.translations = this.entitiesTableConfig.entityTranslations;
 
-    this.headerActionDescriptors = [...this.entitiesTableConfig.headerActionDescriptors];
-    this.groupActionDescriptors = [...this.entitiesTableConfig.groupActionDescriptors];
-    this.cellActionDescriptors = [...this.entitiesTableConfig.cellActionDescriptors];
+    this.headerActionDescriptors = [
+      ...this.entitiesTableConfig.headerActionDescriptors,
+    ];
+    this.groupActionDescriptors = [
+      ...this.entitiesTableConfig.groupActionDescriptors,
+    ];
+    this.cellActionDescriptors = [
+      ...this.entitiesTableConfig.cellActionDescriptors,
+    ];
 
     if (this.entitiesTableConfig.entitiesDeleteEnabled) {
-      this.cellActionDescriptors.push(
-        {
-          name: this.translate.instant('action.delete'),
-          icon: 'delete',
-          isEnabled: entity => this.entitiesTableConfig.deleteEnabled(entity),
-          onAction: ($event, entity) => this.deleteEntity($event, entity)
-        }
-      );
-      this.groupActionDescriptors.push(
-        {
-          name: this.translate.instant('action.delete'),
-          icon: 'delete',
-          isEnabled: true,
-          onAction: ($event, entities) => this.deleteEntities($event, entities)
-        }
-      );
+      this.cellActionDescriptors.push({
+        name: this.translate.instant("action.delete"),
+        icon: "delete",
+        isEnabled: (entity) => this.entitiesTableConfig.deleteEnabled(entity),
+        onAction: ($event, entity) => this.deleteEntity($event, entity),
+      });
+      this.groupActionDescriptors.push({
+        name: this.translate.instant("action.delete"),
+        icon: "delete",
+        isEnabled: true,
+        onAction: ($event, entities) => this.deleteEntities($event, entities),
+      });
     }
 
-    const enabledGroupActionDescriptors =
-      this.groupActionDescriptors.filter((descriptor) => descriptor.isEnabled);
+    const enabledGroupActionDescriptors = this.groupActionDescriptors.filter(
+      (descriptor) => descriptor.isEnabled
+    );
 
-    this.selectionEnabled = this.entitiesTableConfig.selectionEnabled && enabledGroupActionDescriptors.length;
+    this.selectionEnabled =
+      this.entitiesTableConfig.selectionEnabled &&
+      enabledGroupActionDescriptors.length;
 
     this.columnsUpdated();
 
@@ -234,46 +284,70 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     let initialAction: EntitiesTableAction = null;
     if (this.pageMode) {
       initialAction = routerQueryParams?.action;
-      if (this.entitiesTableConfig.defaultSortOrder || routerQueryParams.hasOwnProperty('direction')
-        || routerQueryParams.hasOwnProperty('property')) {
+      if (
+        this.entitiesTableConfig.defaultSortOrder ||
+        routerQueryParams.hasOwnProperty("direction") ||
+        routerQueryParams.hasOwnProperty("property")
+      ) {
         sortOrder = {
-          property: routerQueryParams?.property || this.entitiesTableConfig.defaultSortOrder.property,
-          direction: routerQueryParams?.direction || this.entitiesTableConfig.defaultSortOrder.direction
+          property:
+            routerQueryParams?.property ||
+            this.entitiesTableConfig.defaultSortOrder.property,
+          direction:
+            routerQueryParams?.direction ||
+            this.entitiesTableConfig.defaultSortOrder.direction,
         };
       }
-    } else if (this.entitiesTableConfig.defaultSortOrder){
+    } else if (this.entitiesTableConfig.defaultSortOrder) {
       sortOrder = {
         property: this.entitiesTableConfig.defaultSortOrder.property,
-        direction: this.entitiesTableConfig.defaultSortOrder.direction
+        direction: this.entitiesTableConfig.defaultSortOrder.direction,
       };
     }
 
     this.displayPagination = this.entitiesTableConfig.displayPagination;
     this.defaultPageSize = this.entitiesTableConfig.defaultPageSize;
-    this.pageSizeOptions = [this.defaultPageSize, this.defaultPageSize * 2, this.defaultPageSize * 3];
+    this.pageSizeOptions = [
+      this.defaultPageSize,
+      this.defaultPageSize * 2,
+      this.defaultPageSize * 3,
+    ];
 
     if (this.entitiesTableConfig.useTimePageLink) {
       this.timewindow = this.entitiesTableConfig.defaultTimewindowInterval;
       const interval = this.getTimePageLinkInterval();
-      this.pageLink = new TimePageLink(10, 0, null, sortOrder,
-        interval.startTime, interval.endTime);
+      this.pageLink = new TimePageLink(
+        10,
+        0,
+        null,
+        sortOrder,
+        interval.startTime,
+        interval.endTime
+      );
     } else {
       this.pageLink = new PageLink(10, 0, null, sortOrder);
     }
-    this.pageLink.pageSize = this.displayPagination ? this.defaultPageSize : MAX_SAFE_PAGE_SIZE;
+    this.pageLink.pageSize = this.displayPagination
+      ? this.defaultPageSize
+      : MAX_SAFE_PAGE_SIZE;
     if (this.pageMode) {
-      if (routerQueryParams.hasOwnProperty('page')) {
+      if (routerQueryParams.hasOwnProperty("page")) {
         this.pageLink.page = Number(routerQueryParams.page);
       }
-      if (routerQueryParams.hasOwnProperty('pageSize')) {
+      if (routerQueryParams.hasOwnProperty("pageSize")) {
         this.pageLink.pageSize = Number(routerQueryParams.pageSize);
       }
-      if (routerQueryParams.hasOwnProperty('textSearch') && !isEmptyStr(routerQueryParams.textSearch)) {
+      if (
+        routerQueryParams.hasOwnProperty("textSearch") &&
+        !isEmptyStr(routerQueryParams.textSearch)
+      ) {
         this.textSearchMode = true;
         this.pageLink.textSearch = decodeURI(routerQueryParams.textSearch);
       }
     }
-    this.dataSource = this.entitiesTableConfig.dataSource(this.dataLoaded.bind(this));
+    this.dataSource = this.entitiesTableConfig.dataSource(
+      this.dataLoaded.bind(this)
+    );
     if (this.entitiesTableConfig.onLoadAction) {
       this.entitiesTableConfig.onLoadAction(this.route);
     }
@@ -291,11 +365,11 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
         this.router.navigate([], {
           relativeTo: this.route,
           queryParams,
-          queryParamsHandling: '',
-          replaceUrl: true
+          queryParamsHandling: "",
+          replaceUrl: true,
         });
       }
-      if (initialAction === 'add') {
+      if (initialAction === "add") {
         setTimeout(() => {
           this.addEntity(null);
         }, 0);
@@ -304,14 +378,17 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
   }
 
   ngAfterViewInit() {
-
-    fromEvent(this.searchInputField.nativeElement, 'keyup')
+    fromEvent(this.searchInputField.nativeElement, "keyup")
       .pipe(
         debounceTime(150),
         distinctUntilChanged(),
         tap(() => {
           const queryParams: PageQueryParam = {
-            textSearch: isString(this.pageLink.textSearch) && this.pageLink.textSearch !== '' ? encodeURI(this.pageLink.textSearch) : null
+            textSearch:
+              isString(this.pageLink.textSearch) &&
+              this.pageLink.textSearch !== ""
+                ? encodeURI(this.pageLink.textSearch)
+                : null,
           };
           if (this.displayPagination) {
             this.paginator.pageIndex = 0;
@@ -323,21 +400,32 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
       .subscribe();
 
     if (this.pageMode) {
-      this.route.queryParams.pipe(skip(1)).subscribe((params: PageQueryParam) => {
-        if (this.displayPagination) {
-          this.paginator.pageIndex = Number(params.page) || 0;
-          this.paginator.pageSize = Number(params.pageSize) || this.defaultPageSize;
-        }
-        this.sort.active = params.property || this.entitiesTableConfig.defaultSortOrder.property;
-        this.sort.direction = (params.direction || this.entitiesTableConfig.defaultSortOrder.direction).toLowerCase() as SortDirection;
-        if (params.hasOwnProperty('textSearch') && !isEmptyStr(params.textSearch)) {
-          this.textSearchMode = true;
-          this.pageLink.textSearch = decodeURI(params.textSearch);
-        } else {
-          this.pageLink.textSearch = null;
-        }
-        this.updateData();
-      });
+      this.route.queryParams
+        .pipe(skip(1))
+        .subscribe((params: PageQueryParam) => {
+          if (this.displayPagination) {
+            this.paginator.pageIndex = Number(params.page) || 0;
+            this.paginator.pageSize =
+              Number(params.pageSize) || this.defaultPageSize;
+          }
+          this.sort.active =
+            params.property ||
+            this.entitiesTableConfig.defaultSortOrder.property;
+          this.sort.direction = (
+            params.direction ||
+            this.entitiesTableConfig.defaultSortOrder.direction
+          ).toLowerCase() as SortDirection;
+          if (
+            params.hasOwnProperty("textSearch") &&
+            !isEmptyStr(params.textSearch)
+          ) {
+            this.textSearchMode = true;
+            this.pageLink.textSearch = decodeURI(params.textSearch);
+          } else {
+            this.pageLink.textSearch = null;
+          }
+          this.updateData();
+        });
     }
 
     this.updatePaginationSubscriptions();
@@ -350,36 +438,51 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
       this.updateDataSubscription = null;
     }
     let paginatorSubscription$: Observable<object>;
-    const sortSubscription$: Observable<object> = this.sort.sortChange.asObservable().pipe(
-      map((data) => {
-        const direction = data.direction.toUpperCase();
-        const queryParams: PageQueryParam = {
-          direction: (this.entitiesTableConfig?.defaultSortOrder?.direction === direction ? null : direction) as Direction,
-          property: this.entitiesTableConfig?.defaultSortOrder?.property === data.active ? null : data.active
-        };
-        if (this.displayPagination) {
-          queryParams.page = null;
-          this.paginator.pageIndex = 0;
-        }
-        return queryParams;
-      })
-    );
+    const sortSubscription$: Observable<object> = this.sort.sortChange
+      .asObservable()
+      .pipe(
+        map((data) => {
+          const direction = data.direction.toUpperCase();
+          const queryParams: PageQueryParam = {
+            direction: (this.entitiesTableConfig?.defaultSortOrder
+              ?.direction === direction
+              ? null
+              : direction) as Direction,
+            property:
+              this.entitiesTableConfig?.defaultSortOrder?.property ===
+              data.active
+                ? null
+                : data.active,
+          };
+          if (this.displayPagination) {
+            queryParams.page = null;
+            this.paginator.pageIndex = 0;
+          }
+          return queryParams;
+        })
+      );
     if (this.displayPagination) {
       paginatorSubscription$ = this.paginator.page.asObservable().pipe(
         map((data) => {
           return {
             page: data.pageIndex === 0 ? null : data.pageIndex,
-            pageSize: data.pageSize === this.defaultPageSize ? null : data.pageSize
+            pageSize:
+              data.pageSize === this.defaultPageSize ? null : data.pageSize,
           };
         })
       );
     }
-    this.updateDataSubscription = ((this.displayPagination ? merge(sortSubscription$, paginatorSubscription$)
-      : sortSubscription$) as Observable<PageQueryParam>).pipe(
-      tap((queryParams) => {
-        this.updatedRouterParamsAndData(queryParams);
-      })
-    ).subscribe();
+    this.updateDataSubscription = (
+      (this.displayPagination
+        ? merge(sortSubscription$, paginatorSubscription$)
+        : sortSubscription$) as Observable<PageQueryParam>
+    )
+      .pipe(
+        tap((queryParams) => {
+          this.updatedRouterParamsAndData(queryParams);
+        })
+      )
+      .subscribe();
   }
 
   addEnabled() {
@@ -404,7 +507,7 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     if (this.sort.active) {
       this.pageLink.sortOrder = {
         property: this.sort.active,
-        direction: Direction[this.sort.direction.toUpperCase()]
+        direction: Direction[this.sort.direction.toUpperCase()],
       };
     } else {
       this.pageLink.sortOrder = null;
@@ -421,8 +524,8 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     }
   }
 
-  private getTimePageLinkInterval(): {startTime?: number, endTime?: number} {
-    const interval: {startTime?: number, endTime?: number} = {};
+  private getTimePageLinkInterval(): { startTime?: number; endTime?: number } {
+    const interval: { startTime?: number; endTime?: number } = {};
     switch (this.timewindow.history.historyType) {
       case HistoryWindowType.LAST_INTERVAL:
         const currentTime = Date.now();
@@ -430,11 +533,14 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
         interval.endTime = currentTime;
         break;
       case HistoryWindowType.FIXED:
-        interval.startTime = this.timewindow.history.fixedTimewindow.startTimeMs;
+        interval.startTime =
+          this.timewindow.history.fixedTimewindow.startTimeMs;
         interval.endTime = this.timewindow.history.fixedTimewindow.endTimeMs;
         break;
       case HistoryWindowType.INTERVAL:
-        const startEndTime = calculateIntervalStartEndTime(this.timewindow.history.quickInterval);
+        const startEndTime = calculateIntervalStartEndTime(
+          this.timewindow.history.quickInterval
+        );
         interval.startTime = startEndTime[0];
         interval.endTime = startEndTime[1];
         break;
@@ -480,23 +586,26 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     if (this.entitiesTableConfig.addEntity) {
       entity$ = this.entitiesTableConfig.addEntity();
     } else {
-      entity$ = this.dialog.open<AddEntityDialogComponent, AddEntityDialogData<BaseData<HasId>>,
-                                 BaseData<HasId>>(AddEntityDialogComponent, {
-        disableClose: true,
-        panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
-        data: {
-          entitiesTableConfig: this.entitiesTableConfig
-        }
-      }).afterClosed();
+      entity$ = this.dialog
+        .open<
+          AddEntityDialogComponent,
+          AddEntityDialogData<BaseData<HasId>>,
+          BaseData<HasId>
+        >(AddEntityDialogComponent, {
+          disableClose: true,
+          panelClass: ["tb-dialog", "tb-fullscreen-dialog"],
+          data: {
+            entitiesTableConfig: this.entitiesTableConfig,
+          },
+        })
+        .afterClosed();
     }
-    entity$.subscribe(
-      (entity) => {
-        if (entity) {
-          this.updateData();
-          this.entitiesTableConfig.entityAdded(entity);
-        }
+    entity$.subscribe((entity) => {
+      if (entity) {
+        this.updateData();
+        this.entitiesTableConfig.entityAdded(entity);
       }
-    );
+    });
   }
 
   onEntityUpdated(entity: BaseData<HasId>) {
@@ -505,7 +614,7 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
   }
 
   onEntityAction(action: EntityAction<BaseData<HasId>>) {
-    if (action.action === 'delete') {
+    if (action.action === "delete") {
       this.deleteEntity(action.event, action.entity);
     }
   }
@@ -514,53 +623,57 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     if ($event) {
       $event.stopPropagation();
     }
-    this.dialogService.confirm(
-      this.entitiesTableConfig.deleteEntityTitle(entity),
-      this.entitiesTableConfig.deleteEntityContent(entity),
-      this.translate.instant('action.no'),
-      this.translate.instant('action.yes'),
-      true
-    ).subscribe((result) => {
-      if (result) {
-        this.entitiesTableConfig.deleteEntity(entity.id).subscribe(
-          () => {
+    this.dialogService
+      .confirm(
+        this.entitiesTableConfig.deleteEntityTitle(entity),
+        this.entitiesTableConfig.deleteEntityContent(entity),
+        this.translate.instant("action.no"),
+        this.translate.instant("action.yes"),
+        true
+      )
+      .subscribe((result) => {
+        if (result) {
+          this.entitiesTableConfig.deleteEntity(entity.id).subscribe(() => {
             this.updateData();
             this.entitiesTableConfig.entitiesDeleted([entity.id]);
-          }
-        );
-      }
-    });
+          });
+        }
+      });
   }
 
   deleteEntities($event: Event, entities: BaseData<HasId>[]) {
     if ($event) {
       $event.stopPropagation();
     }
-    this.dialogService.confirm(
-      this.entitiesTableConfig.deleteEntitiesTitle(entities.length),
-      this.entitiesTableConfig.deleteEntitiesContent(entities.length),
-      this.translate.instant('action.no'),
-      this.translate.instant('action.yes'),
-      true
-    ).subscribe((result) => {
-      if (result) {
-        const tasks: Observable<HasUUID>[] = [];
-        entities.forEach((entity) => {
-          if (this.entitiesTableConfig.deleteEnabled(entity)) {
-            tasks.push(this.entitiesTableConfig.deleteEntity(entity.id).pipe(
-              map(() => entity.id),
-              catchError(() => of(null)
-            )));
-          }
-        });
-        forkJoin(tasks).subscribe(
-          (ids) => {
+    this.dialogService
+      .confirm(
+        this.entitiesTableConfig.deleteEntitiesTitle(entities.length),
+        this.entitiesTableConfig.deleteEntitiesContent(entities.length),
+        this.translate.instant("action.no"),
+        this.translate.instant("action.yes"),
+        true
+      )
+      .subscribe((result) => {
+        if (result) {
+          const tasks: Observable<HasUUID>[] = [];
+          entities.forEach((entity) => {
+            if (this.entitiesTableConfig.deleteEnabled(entity)) {
+              tasks.push(
+                this.entitiesTableConfig.deleteEntity(entity.id).pipe(
+                  map(() => entity.id),
+                  catchError(() => of(null))
+                )
+              );
+            }
+          });
+          forkJoin(tasks).subscribe((ids) => {
             this.updateData();
-            this.entitiesTableConfig.entitiesDeleted(ids.filter(id => id !== null));
-          }
-        );
-      }
-    });
+            this.entitiesTableConfig.entitiesDeleted(
+              ids.filter((id) => id !== null)
+            );
+          });
+        }
+      });
   }
 
   onTimewindowChange() {
@@ -572,7 +685,7 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
 
   enterFilterMode() {
     this.textSearchMode = true;
-    this.pageLink.textSearch = '';
+    this.pageLink.textSearch = "";
     setTimeout(() => {
       this.searchInputField.nativeElement.focus();
       this.searchInputField.nativeElement.setSelectionRange(0, 0);
@@ -583,7 +696,7 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     this.textSearchMode = false;
     this.pageLink.textSearch = null;
     const queryParams: PageQueryParam = {
-      textSearch: null
+      textSearch: null,
     };
     if (this.displayPagination) {
       this.paginator.pageIndex = 0;
@@ -592,7 +705,10 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     this.updatedRouterParamsAndData(queryParams);
   }
 
-  resetSortAndFilter(update: boolean = true, preserveTimewindow: boolean = false) {
+  resetSortAndFilter(
+    update: boolean = true,
+    preserveTimewindow: boolean = false
+  ) {
     this.textSearchMode = false;
     this.pageLink.textSearch = null;
     if (this.entitiesTableConfig.useTimePageLink && !preserveTimewindow) {
@@ -601,33 +717,36 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     if (this.displayPagination) {
       this.paginator.pageIndex = 0;
     }
-    const sortable = this.sort.sortables.get(this.entitiesTableConfig.defaultSortOrder.property);
+    const sortable = this.sort.sortables.get(
+      this.entitiesTableConfig.defaultSortOrder.property
+    );
     this.sort.active = sortable.id;
-    this.sort.direction = this.entitiesTableConfig.defaultSortOrder.direction === Direction.ASC ? 'asc' : 'desc';
+    this.sort.direction =
+      this.entitiesTableConfig.defaultSortOrder.direction === Direction.ASC
+        ? "asc"
+        : "desc";
     if (update) {
-      this.updatedRouterParamsAndData({}, '');
+      this.updatedRouterParamsAndData({}, "");
     }
   }
 
   columnsUpdated(resetData: boolean = false) {
-    this.entityColumns = this.entitiesTableConfig.columns.filter(
-      (column) => column instanceof EntityTableColumn)
-      .map(column => column as EntityTableColumn<BaseData<HasId>>);
-    this.actionColumns = this.entitiesTableConfig.columns.filter(
-      (column) => column instanceof EntityActionTableColumn)
-      .map(column => column as EntityActionTableColumn<BaseData<HasId>>);
+    this.entityColumns = this.entitiesTableConfig.columns
+      .filter((column) => column instanceof EntityTableColumn)
+      .map((column) => column as EntityTableColumn<BaseData<HasId>>);
+    this.actionColumns = this.entitiesTableConfig.columns
+      .filter((column) => column instanceof EntityActionTableColumn)
+      .map((column) => column as EntityActionTableColumn<BaseData<HasId>>);
 
     this.displayedColumns = [];
 
     if (this.selectionEnabled) {
-      this.displayedColumns.push('select');
+      this.displayedColumns.push("select");
     }
-    this.entitiesTableConfig.columns.forEach(
-      (column) => {
-        this.displayedColumns.push(column.key);
-      }
-    );
-    this.displayedColumns.push('actions');
+    this.entitiesTableConfig.columns.forEach((column) => {
+      this.displayedColumns.push(column.key);
+    });
+    this.displayedColumns.push("actions");
     this.headerCellStyleCache.length = 0;
     this.cellContentCache.length = 0;
     this.cellTooltipCache.length = 0;
@@ -641,13 +760,13 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     const index = this.entitiesTableConfig.columns.indexOf(column);
     let res = this.headerCellStyleCache[index];
     if (!res) {
-      const widthStyle: any = {width: column.width};
-      if (column.width !== '0px') {
+      const widthStyle: any = { width: column.width };
+      if (column.width !== "0px") {
         widthStyle.minWidth = column.width;
         widthStyle.maxWidth = column.width;
       }
       if (column instanceof EntityTableColumn) {
-        res = {...column.headerCellStyleFunction(column.key), ...widthStyle};
+        res = { ...column.headerCellStyleFunction(column.key), ...widthStyle };
       } else {
         res = widthStyle;
       }
@@ -663,22 +782,32 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     this.cellStyleCache[index] = undefined;
   }
 
-  cellContent(entity: BaseData<HasId>, column: EntityColumn<BaseData<HasId>>, row: number) {
+  cellContent(
+    entity: BaseData<HasId>,
+    column: EntityColumn<BaseData<HasId>>,
+    row: number
+  ) {
     if (column instanceof EntityTableColumn) {
       const col = this.entitiesTableConfig.columns.indexOf(column);
       const index = row * this.entitiesTableConfig.columns.length + col;
       let res = this.cellContentCache[index];
       if (isUndefined(res)) {
-        res = this.domSanitizer.bypassSecurityTrustHtml(column.cellContentFunction(entity, column.key));
+        res = this.domSanitizer.bypassSecurityTrustHtml(
+          column.cellContentFunction(entity, column.key)
+        );
         this.cellContentCache[index] = res;
       }
       return res;
     } else {
-      return '';
+      return "";
     }
   }
 
-  cellTooltip(entity: BaseData<HasId>, column: EntityColumn<BaseData<HasId>>, row: number) {
+  cellTooltip(
+    entity: BaseData<HasId>,
+    column: EntityColumn<BaseData<HasId>>,
+    row: number
+  ) {
     if (column instanceof EntityTableColumn) {
       const col = this.entitiesTableConfig.columns.indexOf(column);
       const index = row * this.entitiesTableConfig.columns.length + col;
@@ -695,18 +824,25 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     }
   }
 
-  cellStyle(entity: BaseData<HasId>, column: EntityColumn<BaseData<HasId>>, row: number) {
+  cellStyle(
+    entity: BaseData<HasId>,
+    column: EntityColumn<BaseData<HasId>>,
+    row: number
+  ) {
     const col = this.entitiesTableConfig.columns.indexOf(column);
     const index = row * this.entitiesTableConfig.columns.length + col;
     let res = this.cellStyleCache[index];
     if (!res) {
-      const widthStyle: any = {width: column.width};
-      if (column.width !== '0px') {
+      const widthStyle: any = { width: column.width };
+      if (column.width !== "0px") {
         widthStyle.minWidth = column.width;
         widthStyle.maxWidth = column.width;
       }
       if (column instanceof EntityTableColumn) {
-        res = {...column.cellStyleFunction(entity, column.key), ...widthStyle};
+        res = {
+          ...column.cellStyleFunction(entity, column.key),
+          ...widthStyle,
+        };
       } else {
         res = widthStyle;
       }
@@ -723,14 +859,20 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     return entity.id.id;
   }
 
-  protected updatedRouterParamsAndData(queryParams: object, queryParamsHandling: QueryParamsHandling = 'merge') {
+  protected updatedRouterParamsAndData(
+    queryParams: object,
+    queryParamsHandling: QueryParamsHandling = "merge"
+  ) {
     if (this.pageMode) {
       this.router.navigate([], {
         relativeTo: this.route,
         queryParams,
-        queryParamsHandling
+        queryParamsHandling,
       });
-      if (queryParamsHandling === '' && isEqual(this.route.snapshot.queryParams, queryParams)) {
+      if (
+        queryParamsHandling === "" &&
+        isEqual(this.route.snapshot.queryParams, queryParams)
+      ) {
         this.updateData();
       }
     } else {
@@ -740,5 +882,10 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
 
   detectChanges() {
     this.cd.markForCheck();
+  }
+
+  goBack() {
+    // this.router.navigate([".."], { relativeTo: this.route });
+    history.back();
   }
 }

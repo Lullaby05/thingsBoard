@@ -29,7 +29,7 @@ tb-dashboard-page {
 div.tb-dashboard-page {
   &.mat-content {
     overflow: hidden;
-    background-color: #eee;
+    background-color: #f7f8fa;
   }
   section.tb-dashboard-title {
     position: relative;
@@ -50,7 +50,7 @@ div.tb-dashboard-page {
       height: 38px;
       font-size: 2rem;
       font-weight: 500;
-      letter-spacing: .005em;
+      letter-spacing: 0.005em;
     }
   }
 
@@ -61,7 +61,7 @@ div.tb-dashboard-page {
     z-index: 13;
     pointer-events: none;
 
-    .dashboard_logo{
+    .dashboard_logo {
       height: 75%;
       margin-right: 16px;
     }
@@ -73,7 +73,7 @@ div.tb-dashboard-page {
 
     &.tb-dashboard-toolbar-closed {
       right: 18px;
-      transition: right .3s cubic-bezier(.55, 0, .55, .2) .2s;
+      transition: right 0.3s cubic-bezier(0.55, 0, 0.55, 0.2) 0.2s;
     }
   }
 
@@ -94,7 +94,7 @@ div.tb-dashboard-page {
           margin-top: $toolbar-height;
         }
         &.tb-dashboard-toolbar-animated {
-          transition: margin-top .3s cubic-bezier(.55, 0, .55, .2);
+          transition: margin-top 0.3s cubic-bezier(0.55, 0, 0.55, 0.2);
         }
       }
     }
@@ -103,7 +103,7 @@ div.tb-dashboard-page {
       margin-top: 0;
 
       &.tb-dashboard-toolbar-animated {
-        transition: margin-top .3s cubic-bezier(.55, 0, .55, .2) .2s;
+        transition: margin-top 0.3s cubic-bezier(0.55, 0, 0.55, 0.2) 0.2s;
       }
     }
   }
@@ -157,5 +157,4 @@ div.tb-dashboard-page {
       }
     }
   }
-
 }

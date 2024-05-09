@@ -14,15 +14,24 @@
 /// limitations under the License.
 ///
 
-import * as CanvasGauges from 'canvas-gauges';
-import { FontStyle, FontWeight } from '@home/components/widget/lib/settings.models';
-import tinycolor from 'tinycolor2';
-import { ColorFormats } from 'tinycolor2';
-import { isDefined, isDefinedAndNotNull, isString, isUndefined, padValue } from '@core/utils';
+import * as CanvasGauges from "canvas-gauges";
+import {
+  FontStyle,
+  FontWeight,
+} from "@home/components/widget/lib/settings.models";
+import tinycolor from "tinycolor2";
+import { ColorFormats } from "tinycolor2";
+import {
+  isDefined,
+  isDefinedAndNotNull,
+  isString,
+  isUndefined,
+  padValue,
+} from "@core/utils";
 import GenericOptions = CanvasGauges.GenericOptions;
 import BaseGauge = CanvasGauges.BaseGauge;
 
-export type GaugeType = 'arc' | 'donut' | 'horizontalBar' | 'verticalBar';
+export type GaugeType = "arc" | "donut" | "horizontalBar" | "verticalBar";
 
 export interface DigitalGaugeColorRange {
   pct: number;
@@ -83,53 +92,54 @@ export interface CanvasDigitalGaugeOptions extends GenericOptions {
   colorTicks?: string;
   tickWidth?: number;
 
-  labelTimestamp?: string
+  labelTimestamp?: string;
   unitTitle?: string;
   showUnitTitle?: boolean;
   showTimestamp?: boolean;
 }
 
-const defaultDigitalGaugeOptions: CanvasDigitalGaugeOptions = { ...GenericOptions,
+const defaultDigitalGaugeOptions: CanvasDigitalGaugeOptions = {
+  ...GenericOptions,
   ...{
-    gaugeType: 'arc',
+    gaugeType: "arc",
     gaugeWithScale: 0.75,
     dashThickness: 0,
     roundedLineCap: false,
 
-    gaugeColor: '#777',
-    levelColors: ['blue'],
+    gaugeColor: "#777",
+    levelColors: ["blue"],
 
-    symbol: '',
+    symbol: "",
     hideValue: false,
     hideMinMax: false,
 
-    fontTitle: 'Roboto',
+    fontTitle: "Roboto",
 
-    fontValue: 'Roboto',
+    fontValue: "Roboto",
 
     fontMinMaxSize: 10,
-    fontMinMaxStyle: 'normal',
-    fontMinMaxWeight: '500',
-    colorMinMax: '#eee',
-    fontMinMax: 'Roboto',
+    fontMinMaxStyle: "normal",
+    fontMinMaxWeight: "500",
+    colorMinMax: "#f7f8fa",
+    fontMinMax: "Roboto",
 
     fontLabelSize: 8,
-    fontLabelStyle: 'normal',
-    fontLabelWeight: '500',
-    colorLabel: '#eee',
-    fontLabel: 'Roboto',
+    fontLabelStyle: "normal",
+    fontLabelWeight: "500",
+    colorLabel: "#f7f8fa",
+    fontLabel: "Roboto",
 
     neonGlowBrightness: 0,
 
-    colorTicks: 'gray',
+    colorTicks: "gray",
     tickWidth: 4,
     ticks: [],
 
-    isMobile: false
-  }
+    isMobile: false,
+  },
 };
 
-BaseGauge.initialize('CanvasDigitalGauge', defaultDigitalGaugeOptions);
+BaseGauge.initialize("CanvasDigitalGauge", defaultDigitalGaugeOptions);
 
 interface HTMLCanvasElementClone extends HTMLCanvasElement {
   initialized?: boolean;
@@ -138,7 +148,8 @@ interface HTMLCanvasElementClone extends HTMLCanvasElement {
   renderedProgress?: string;
 }
 
-interface DigitalGaugeCanvasRenderingContext2D extends CanvasRenderingContext2D {
+interface DigitalGaugeCanvasRenderingContext2D
+  extends CanvasRenderingContext2D {
   barDimensions?: BarDimensions;
   currentColor?: string;
 }
@@ -183,33 +194,44 @@ interface FontHeightInfo {
 }
 
 export class Drawings {
-  static font(options: CanvasGauges.GenericOptions, target: string, baseSize: number): string {
-    return options['font' + target + 'Style'] + ' ' +
-      options['font' + target + 'Weight'] + ' ' +
-      options['font' + target + 'Size'] * baseSize + 'px ' +
-      options['font' + target];
+  static font(
+    options: CanvasGauges.GenericOptions,
+    target: string,
+    baseSize: number
+  ): string {
+    return (
+      options["font" + target + "Style"] +
+      " " +
+      options["font" + target + "Weight"] +
+      " " +
+      options["font" + target + "Size"] * baseSize +
+      "px " +
+      options["font" + target]
+    );
   }
-  static normalizedValue(options: CanvasGauges.GenericOptions): {normal: number, indented: number} {
+  static normalizedValue(options: CanvasGauges.GenericOptions): {
+    normal: number;
+    indented: number;
+  } {
     const value = options.value;
     const min = options.minValue;
     const max = options.maxValue;
     const dt = (max - min) * 0.01;
     return {
       normal: value < min ? min : value > max ? max : value,
-      indented: value < min ? min - dt : value > max ? max + dt : value
+      indented: value < min ? min - dt : value > max ? max + dt : value,
     };
   }
   static verifyError(err: any) {
     if (err instanceof DOMException && (err as any).result === 0x8053000b) {
-      return ; // ignore it
+      return; // ignore it
     }
     throw err;
   }
 }
 
 export class CanvasDigitalGauge extends BaseGauge {
-
-  static heightCache: {[key: string]: FontHeightInfo} = {};
+  static heightCache: { [key: string]: FontHeightInfo } = {};
 
   private elementValueClone: HTMLCanvasElementClone;
   private contextValueClone: DigitalGaugeCanvasRenderingContext2D;
@@ -220,13 +242,14 @@ export class CanvasDigitalGauge extends BaseGauge {
   public _value: number;
 
   constructor(options: CanvasDigitalGaugeOptions) {
-    options = {...defaultDigitalGaugeOptions, ...(options || {})};
+    options = { ...defaultDigitalGaugeOptions, ...(options || {}) };
     super(CanvasDigitalGauge.configure(options));
     this.initValueClone();
   }
 
-  static configure(options: CanvasDigitalGaugeOptions): CanvasDigitalGaugeOptions {
-
+  static configure(
+    options: CanvasDigitalGaugeOptions
+  ): CanvasDigitalGaugeOptions {
     if (options.value > options.maxValue) {
       options.value = options.maxValue;
     }
@@ -235,7 +258,7 @@ export class CanvasDigitalGauge extends BaseGauge {
       options.value = options.minValue;
     }
 
-    if (options.gaugeType === 'donut') {
+    if (options.gaugeType === "donut") {
       if (!isDefinedAndNotNull(options.donutStartAngle)) {
         options.donutStartAngle = 1.5 * Math.PI;
       }
@@ -246,7 +269,7 @@ export class CanvasDigitalGauge extends BaseGauge {
 
     const colorsCount = options.levelColors.length;
     const isColorProperty = isString(options.levelColors[0]);
-    const inc = colorsCount > 1 ? (1 / (colorsCount - 1)) : 1;
+    const inc = colorsCount > 1 ? 1 / (colorsCount - 1) : 1;
     options.colorsRange = [];
     if (options.neonGlowBrightness) {
       options.neonColorsRange = [];
@@ -258,20 +281,26 @@ export class CanvasDigitalGauge extends BaseGauge {
         if (isColorProperty) {
           percentage = inc * i;
         } else {
-          percentage = CanvasDigitalGauge.normalizeValue(levelColor.value, options.minValue, options.maxValue);
+          percentage = CanvasDigitalGauge.normalizeValue(
+            levelColor.value,
+            options.minValue,
+            options.maxValue
+          );
         }
         let tColor = tinycolor(isColorProperty ? levelColor : levelColor.color);
         options.colorsRange.push({
           pct: percentage,
           color: tColor.toRgb(),
-          rgbString: tColor.toRgbString()
+          rgbString: tColor.toRgbString(),
         });
         if (options.neonGlowBrightness) {
-          tColor = tinycolor(isColorProperty ? levelColor : levelColor.color).brighten(options.neonGlowBrightness);
+          tColor = tinycolor(
+            isColorProperty ? levelColor : levelColor.color
+          ).brighten(options.neonGlowBrightness);
           options.neonColorsRange.push({
             pct: percentage,
             color: tColor.toRgb(),
-            rgbString: tColor.toRgbString()
+            rgbString: tColor.toRgbString(),
           });
         }
       }
@@ -279,15 +308,29 @@ export class CanvasDigitalGauge extends BaseGauge {
     options.ticksValue = [];
     for (const tick of options.ticks) {
       if (tick !== null) {
-        options.ticksValue.push(CanvasDigitalGauge.normalizeValue(tick, options.minValue, options.maxValue));
+        options.ticksValue.push(
+          CanvasDigitalGauge.normalizeValue(
+            tick,
+            options.minValue,
+            options.maxValue
+          )
+        );
       }
     }
 
     if (options.neonGlowBrightness) {
-      options.neonColorTitle = tinycolor(options.colorTitle).brighten(options.neonGlowBrightness).toHexString();
-      options.neonColorLabel = tinycolor(options.colorLabel).brighten(options.neonGlowBrightness).toHexString();
-      options.neonColorValue = tinycolor(options.colorValue).brighten(options.neonGlowBrightness).toHexString();
-      options.neonColorMinMax = tinycolor(options.colorMinMax).brighten(options.neonGlowBrightness).toHexString();
+      options.neonColorTitle = tinycolor(options.colorTitle)
+        .brighten(options.neonGlowBrightness)
+        .toHexString();
+      options.neonColorLabel = tinycolor(options.colorLabel)
+        .brighten(options.neonGlowBrightness)
+        .toHexString();
+      options.neonColorValue = tinycolor(options.colorValue)
+        .brighten(options.neonGlowBrightness)
+        .toHexString();
+      options.neonColorMinMax = tinycolor(options.colorMinMax)
+        .brighten(options.neonGlowBrightness)
+        .toHexString();
     }
 
     return options;
@@ -306,15 +349,19 @@ export class CanvasDigitalGauge extends BaseGauge {
 
   private initValueClone() {
     const canvas = this.canvas;
-    this.elementValueClone = canvas.element.cloneNode(true) as HTMLCanvasElementClone;
-    this.contextValueClone = this.elementValueClone.getContext('2d');
+    this.elementValueClone = canvas.element.cloneNode(
+      true
+    ) as HTMLCanvasElementClone;
+    this.contextValueClone = this.elementValueClone.getContext("2d");
     this.elementValueClone.initialized = false;
 
     this.contextValueClone.translate(canvas.drawX, canvas.drawY);
     this.contextValueClone.save();
 
-    this.elementProgressClone = canvas.element.cloneNode(true) as HTMLCanvasElementClone;
-    this.contextProgressClone = this.elementProgressClone.getContext('2d');
+    this.elementProgressClone = canvas.element.cloneNode(
+      true
+    ) as HTMLCanvasElementClone;
+    this.contextProgressClone = this.elementProgressClone.getContext("2d");
     this.elementProgressClone.initialized = false;
 
     this.contextProgressClone.translate(canvas.drawX, canvas.drawY);
@@ -357,20 +404,29 @@ export class CanvasDigitalGauge extends BaseGauge {
         -canvas.drawX,
         -canvas.drawY,
         canvas.drawWidth,
-        canvas.drawHeight
+        canvas.drawHeight,
       ];
       const options = this.options as CanvasDigitalGaugeOptions;
       const elementClone = canvas.elementClone as HTMLCanvasElementClone;
       if (!elementClone.initialized) {
-        const context: DigitalGaugeCanvasRenderingContext2D = canvas.contextClone;
+        const context: DigitalGaugeCanvasRenderingContext2D =
+          canvas.contextClone;
 
         // clear the cache
         context.clearRect(x, y, w, h);
         context.save();
 
-        const canvasContext = canvas.context as DigitalGaugeCanvasRenderingContext2D;
+        const canvasContext =
+          canvas.context as DigitalGaugeCanvasRenderingContext2D;
 
-        canvasContext.barDimensions = barDimensions(context, options, x, y, w, h);
+        canvasContext.barDimensions = barDimensions(
+          context,
+          options,
+          x,
+          y,
+          w,
+          h
+        );
         this.contextValueClone.barDimensions = canvasContext.barDimensions;
         this.contextProgressClone.barDimensions = canvasContext.barDimensions;
 
@@ -379,7 +435,7 @@ export class CanvasDigitalGauge extends BaseGauge {
         drawDigitalTitle(context, options);
 
         if (options.showUnitTitle) {
-          drawDigitalLabel(context, options, options.unitTitle, 'labelY');
+          drawDigitalLabel(context, options, options.unitTitle, "labelY");
         }
 
         drawDigitalMinMax(context, options);
@@ -388,9 +444,13 @@ export class CanvasDigitalGauge extends BaseGauge {
       }
 
       let valueChanged = false;
-      if (!this.elementValueClone.initialized ||
-           isDefined(this._value) && this.elementValueClone.renderedValue !== this._value ||
-           (options.showTimestamp && this.elementValueClone.renderedTimestamp !== this.timestamp)) {
+      if (
+        !this.elementValueClone.initialized ||
+        (isDefined(this._value) &&
+          this.elementValueClone.renderedValue !== this._value) ||
+        (options.showTimestamp &&
+          this.elementValueClone.renderedTimestamp !== this.timestamp)
+      ) {
         if (isDefined(this._value)) {
           this.elementValueClone.renderedValue = this._value;
         }
@@ -403,10 +463,19 @@ export class CanvasDigitalGauge extends BaseGauge {
 
         context.drawImage(canvas.elementClone, x, y, w, h);
 
-        drawDigitalValue(context, options, this.elementValueClone.renderedValue);
+        drawDigitalValue(
+          context,
+          options,
+          this.elementValueClone.renderedValue
+        );
 
         if (options.showTimestamp) {
-          drawDigitalLabel(context, options, options.labelTimestamp, 'timeseriesLabelY');
+          drawDigitalLabel(
+            context,
+            options,
+            options.labelTimestamp,
+            "timeseriesLabelY"
+          );
           this.elementValueClone.renderedTimestamp = this.timestamp;
         }
 
@@ -415,12 +484,17 @@ export class CanvasDigitalGauge extends BaseGauge {
         valueChanged = true;
       }
 
-      const progress = (Drawings.normalizedValue(options).normal - options.minValue) /
+      const progress =
+        (Drawings.normalizedValue(options).normal - options.minValue) /
         (options.maxValue - options.minValue);
 
       const fixedProgress = progress.toFixed(3);
 
-      if (!this.elementProgressClone.initialized || this.elementProgressClone.renderedProgress !== fixedProgress || valueChanged) {
+      if (
+        !this.elementProgressClone.initialized ||
+        this.elementProgressClone.renderedProgress !== fixedProgress ||
+        valueChanged
+      ) {
         const context = this.contextProgressClone;
         // clear the cache
         context.clearRect(x, y, w, h);
@@ -444,7 +518,6 @@ export class CanvasDigitalGauge extends BaseGauge {
 
       // @ts-ignore
       super.draw();
-
     } catch (err) {
       Drawings.verifyError(err);
     }
@@ -456,7 +529,8 @@ export class CanvasDigitalGauge extends BaseGauge {
       let color = this.contextProgressClone.currentColor;
       const options = this.options as CanvasDigitalGaugeOptions;
       if (!color) {
-        const progress = (Drawings.normalizedValue(options).normal - options.minValue) /
+        const progress =
+          (Drawings.normalizedValue(options).normal - options.minValue) /
           (options.maxValue - options.minValue);
         if (options.neonGlowBrightness) {
           color = getProgressColor(progress, options.neonColorsRange);
@@ -466,36 +540,41 @@ export class CanvasDigitalGauge extends BaseGauge {
       }
       return color;
     } else {
-      return '#000';
+      return "#000";
     }
   }
 }
 
-function barDimensions(context: DigitalGaugeCanvasRenderingContext2D,
-                       options: CanvasDigitalGaugeOptions,
-                       x: number, y: number, w: number, h: number): BarDimensions {
+function barDimensions(
+  context: DigitalGaugeCanvasRenderingContext2D,
+  options: CanvasDigitalGaugeOptions,
+  x: number,
+  y: number,
+  w: number,
+  h: number
+): BarDimensions {
   context.barDimensions = {
     baseX: x,
     baseY: y,
     width: w,
-    height: h
+    height: h,
   };
 
   const bd = context.barDimensions;
 
   let aspect = 1;
 
-  if (options.gaugeType === 'horizontalBar') {
-    aspect = options.title === '' ? 2.5 : 2;
-  } else if (options.gaugeType === 'verticalBar') {
+  if (options.gaugeType === "horizontalBar") {
+    aspect = options.title === "" ? 2.5 : 2;
+  } else if (options.gaugeType === "verticalBar") {
     aspect = options.hideMinMax ? 0.35 : 0.5;
-  } else if (options.gaugeType === 'arc') {
+  } else if (options.gaugeType === "arc") {
     aspect = 1.5;
   }
 
   const currentAspect = w / h;
   if (currentAspect > aspect) {
-    bd.width = (h * aspect);
+    bd.width = h * aspect;
     bd.height = h;
   } else {
     bd.width = w;
@@ -507,9 +586,12 @@ function barDimensions(context: DigitalGaugeCanvasRenderingContext2D,
   bd.baseX += (w - bd.width) / 2;
   bd.baseY += (h - bd.height) / 2;
 
-  if (options.gaugeType === 'donut') {
+  if (options.gaugeType === "donut") {
     bd.fontSizeFactor = Math.max(bd.width, bd.height) / 125;
-  } else if (options.gaugeType === 'verticalBar' || (options.gaugeType === 'arc' && options.title === '')) {
+  } else if (
+    options.gaugeType === "verticalBar" ||
+    (options.gaugeType === "arc" && options.title === "")
+  ) {
     bd.fontSizeFactor = Math.max(bd.width, bd.height) / 150;
   } else {
     bd.fontSizeFactor = Math.max(bd.width, bd.height) / 200;
@@ -518,67 +600,114 @@ function barDimensions(context: DigitalGaugeCanvasRenderingContext2D,
   const gws = options.gaugeWidthScale;
 
   if (options.neonGlowBrightness) {
-    options.fontTitleHeight = determineFontHeight(options, 'Title', bd.fontSizeFactor);
-    options.fontLabelHeight = determineFontHeight(options, 'Label', bd.fontSizeFactor);
-    options.fontValueHeight = determineFontHeight(options, 'Value', bd.fontSizeFactor);
-    options.fontMinMaxHeight = determineFontHeight(options, 'MinMax', bd.fontSizeFactor);
+    options.fontTitleHeight = determineFontHeight(
+      options,
+      "Title",
+      bd.fontSizeFactor
+    );
+    options.fontLabelHeight = determineFontHeight(
+      options,
+      "Label",
+      bd.fontSizeFactor
+    );
+    options.fontValueHeight = determineFontHeight(
+      options,
+      "Value",
+      bd.fontSizeFactor
+    );
+    options.fontMinMaxHeight = determineFontHeight(
+      options,
+      "MinMax",
+      bd.fontSizeFactor
+    );
   }
 
-  if (options.gaugeType === 'donut') {
+  if (options.gaugeType === "donut") {
     bd.Ro = bd.width / 2 - bd.width / 20;
     bd.Cy = bd.baseY + bd.height / 2;
-    if (options.title && typeof options.title === 'string' && options.title.length > 0) {
-      let titleOffset = determineFontHeight(options, 'Title', bd.fontSizeFactor).height;
+    if (
+      options.title &&
+      typeof options.title === "string" &&
+      options.title.length > 0
+    ) {
+      let titleOffset = determineFontHeight(
+        options,
+        "Title",
+        bd.fontSizeFactor
+      ).height;
       titleOffset += bd.fontSizeFactor * 2;
       bd.titleY = bd.baseY + titleOffset;
       titleOffset += bd.fontSizeFactor * 2;
       bd.Cy += titleOffset / 2;
       bd.Ro -= titleOffset / 2;
     }
-    bd.Ri = bd.Ro - bd.width / 6.666666666666667 * gws * 1.2;
+    bd.Ri = bd.Ro - (bd.width / 6.666666666666667) * gws * 1.2;
     bd.Cx = bd.baseX + bd.width / 2;
-  } else if (options.gaugeType === 'arc') {
-    if (options.title && typeof options.title === 'string' && options.title.length > 0) {
+  } else if (options.gaugeType === "arc") {
+    if (
+      options.title &&
+      typeof options.title === "string" &&
+      options.title.length > 0
+    ) {
       bd.Ro = bd.width / 2 - bd.width / 7;
-      bd.Ri = bd.Ro - bd.width / 6.666666666666667 * gws;
+      bd.Ri = bd.Ro - (bd.width / 6.666666666666667) * gws;
     } else {
       bd.Ro = bd.width / 2 - bd.fontSizeFactor * 4;
-      bd.Ri = bd.Ro - bd.width / 6.666666666666667 * gws * 1.2;
+      bd.Ri = bd.Ro - (bd.width / 6.666666666666667) * gws * 1.2;
     }
     bd.Cx = bd.baseX + bd.width / 2;
     bd.Cy = bd.baseY + bd.height / 1.25;
-  } else if (options.gaugeType === 'verticalBar') {
+  } else if (options.gaugeType === "verticalBar") {
     bd.Ro = bd.width / 2 - bd.width / 10;
-    bd.Ri = bd.Ro - bd.width / 6.666666666666667 * gws * (options.hideMinMax ? 4 : 2.5);
-  } else { // horizontalBar
+    bd.Ri =
+      bd.Ro -
+      (bd.width / 6.666666666666667) * gws * (options.hideMinMax ? 4 : 2.5);
+  } else {
+    // horizontalBar
     bd.Ro = bd.width / 2 - bd.width / 10;
-    bd.Ri = bd.Ro - bd.width / 6.666666666666667 * gws;
+    bd.Ri = bd.Ro - (bd.width / 6.666666666666667) * gws;
   }
 
   bd.strokeWidth = bd.Ro - bd.Ri;
   bd.Rm = bd.Ri + bd.strokeWidth * 0.5;
 
-  bd.fontValueBaseline = 'alphabetic';
-  bd.fontMinMaxBaseline = 'alphabetic';
-  bd.fontMinMaxAlign = 'center';
+  bd.fontValueBaseline = "alphabetic";
+  bd.fontMinMaxBaseline = "alphabetic";
+  bd.fontMinMaxAlign = "center";
 
-  if (options.gaugeType === 'donut') {
-    bd.fontValueBaseline = 'middle';
+  if (options.gaugeType === "donut") {
+    bd.fontValueBaseline = "middle";
     if (options.showUnitTitle || options.showTimestamp) {
-      const valueHeight = determineFontHeight(options, 'Value', bd.fontSizeFactor).height;
-      const labelHeight = determineFontHeight(options, 'Label', bd.fontSizeFactor).height;
+      const valueHeight = determineFontHeight(
+        options,
+        "Value",
+        bd.fontSizeFactor
+      ).height;
+      const labelHeight = determineFontHeight(
+        options,
+        "Label",
+        bd.fontSizeFactor
+      ).height;
       const total = valueHeight + labelHeight;
       bd.labelY = bd.Cy + total / 2;
-      bd.timeseriesLabelY = determineTimeseriesLabelY(options, bd.labelY, bd.fontSizeFactor)
+      bd.timeseriesLabelY = determineTimeseriesLabelY(
+        options,
+        bd.labelY,
+        bd.fontSizeFactor
+      );
       bd.valueY = bd.Cy - total / 2 + valueHeight / 2;
     } else {
       bd.valueY = bd.Cy;
     }
-  } else if (options.gaugeType === 'arc') {
+  } else if (options.gaugeType === "arc") {
     bd.titleY = bd.Cy - bd.Ro - 12 * bd.fontSizeFactor;
     bd.valueY = bd.Cy;
     bd.labelY = bd.Cy + (8 + options.fontLabelSize) * bd.fontSizeFactor;
-    bd.timeseriesLabelY = determineTimeseriesLabelY(options, bd.labelY, bd.fontSizeFactor)
+    bd.timeseriesLabelY = determineTimeseriesLabelY(
+      options,
+      bd.labelY,
+      bd.fontSizeFactor
+    );
     bd.minY = bd.maxY = bd.labelY;
     if (options.roundedLineCap) {
       bd.minY += bd.strokeWidth / 2;
@@ -586,69 +715,113 @@ function barDimensions(context: DigitalGaugeCanvasRenderingContext2D,
     }
     bd.minX = bd.Cx - bd.Rm;
     bd.maxX = bd.Cx + bd.Rm;
-  } else if (options.gaugeType === 'horizontalBar') {
-    bd.titleY = bd.baseY + 4 * bd.fontSizeFactor +
-      (options.title === '' ? 0 : options.fontTitleSize * bd.fontSizeFactor);
-    bd.titleBottom = bd.titleY + (options.title === '' ? 0 : 4) * bd.fontSizeFactor;
+  } else if (options.gaugeType === "horizontalBar") {
+    bd.titleY =
+      bd.baseY +
+      4 * bd.fontSizeFactor +
+      (options.title === "" ? 0 : options.fontTitleSize * bd.fontSizeFactor);
+    bd.titleBottom =
+      bd.titleY + (options.title === "" ? 0 : 4) * bd.fontSizeFactor;
 
-    bd.valueY = bd.titleBottom +
+    bd.valueY =
+      bd.titleBottom +
       (options.hideValue ? 0 : options.fontValueSize * bd.fontSizeFactor);
 
     bd.barTop = bd.valueY + 8 * bd.fontSizeFactor;
     bd.barBottom = bd.barTop + bd.strokeWidth;
 
-    if (options.hideMinMax && !options.showUnitTitle && !options.showTimestamp) {
+    if (
+      options.hideMinMax &&
+      !options.showUnitTitle &&
+      !options.showTimestamp
+    ) {
       bd.labelY = bd.barBottom;
-      bd.timeseriesLabelY = determineTimeseriesLabelY(options, bd.labelY, bd.fontSizeFactor)
-      bd.barLeft = bd.origBaseX + options.fontMinMaxSize / 3 * bd.fontSizeFactor;
-      bd.barRight = bd.origBaseX + w + /*bd.width*/ -options.fontMinMaxSize / 3 * bd.fontSizeFactor;
+      bd.timeseriesLabelY = determineTimeseriesLabelY(
+        options,
+        bd.labelY,
+        bd.fontSizeFactor
+      );
+      bd.barLeft =
+        bd.origBaseX + (options.fontMinMaxSize / 3) * bd.fontSizeFactor;
+      bd.barRight =
+        bd.origBaseX +
+        w +
+        /*bd.width*/ (-options.fontMinMaxSize / 3) * bd.fontSizeFactor;
     } else {
-      context.font = Drawings.font(options, 'MinMax', bd.fontSizeFactor);
-      const minTextWidth = context.measureText(options.minValue + '').width;
-      const maxTextWidth = context.measureText(options.maxValue + '').width;
+      context.font = Drawings.font(options, "MinMax", bd.fontSizeFactor);
+      const minTextWidth = context.measureText(options.minValue + "").width;
+      const maxTextWidth = context.measureText(options.maxValue + "").width;
       const maxW = Math.max(minTextWidth, maxTextWidth);
-      bd.minX = bd.origBaseX + maxW / 2 + options.fontMinMaxSize / 3 * bd.fontSizeFactor;
-      bd.maxX = bd.origBaseX + w + /*bd.width*/ -maxW / 2 - options.fontMinMaxSize / 3 * bd.fontSizeFactor;
+      bd.minX =
+        bd.origBaseX +
+        maxW / 2 +
+        (options.fontMinMaxSize / 3) * bd.fontSizeFactor;
+      bd.maxX =
+        bd.origBaseX +
+        w +
+        /*bd.width*/ -maxW / 2 -
+        (options.fontMinMaxSize / 3) * bd.fontSizeFactor;
       bd.barLeft = bd.minX;
       bd.barRight = bd.maxX;
-      bd.labelY = bd.barBottom + (8 + options.fontLabelSize) * bd.fontSizeFactor;
-      bd.timeseriesLabelY = determineTimeseriesLabelY(options, bd.labelY, bd.fontSizeFactor)
+      bd.labelY =
+        bd.barBottom + (8 + options.fontLabelSize) * bd.fontSizeFactor;
+      bd.timeseriesLabelY = determineTimeseriesLabelY(
+        options,
+        bd.labelY,
+        bd.fontSizeFactor
+      );
       bd.minY = bd.maxY = bd.labelY;
     }
-  } else if (options.gaugeType === 'verticalBar') {
-    bd.titleY = bd.baseY + ((options.title === '' ? 0 : options.fontTitleSize) + 8) * bd.fontSizeFactor;
-    bd.titleBottom = bd.titleY + (options.title === '' ? 0 : 4) * bd.fontSizeFactor;
+  } else if (options.gaugeType === "verticalBar") {
+    bd.titleY =
+      bd.baseY +
+      ((options.title === "" ? 0 : options.fontTitleSize) + 8) *
+        bd.fontSizeFactor;
+    bd.titleBottom =
+      bd.titleY + (options.title === "" ? 0 : 4) * bd.fontSizeFactor;
 
-    bd.valueY = bd.titleBottom + (options.hideValue ? 0 : options.fontValueSize * bd.fontSizeFactor);
+    bd.valueY =
+      bd.titleBottom +
+      (options.hideValue ? 0 : options.fontValueSize * bd.fontSizeFactor);
     bd.barTop = bd.valueY + 8 * bd.fontSizeFactor;
 
     bd.labelY = bd.baseY + bd.height;
-    bd.timeseriesLabelY = determineTimeseriesLabelY(options, bd.labelY, bd.fontSizeFactor)
+    bd.timeseriesLabelY = determineTimeseriesLabelY(
+      options,
+      bd.labelY,
+      bd.fontSizeFactor
+    );
     if (options.showUnitTitle || options.showTimestamp) {
       bd.barBottom = bd.labelY - options.fontLabelSize * bd.fontSizeFactor;
     } else {
-      bd.barBottom = bd.labelY
+      bd.barBottom = bd.labelY;
     }
-    bd.minX = bd.maxX = bd.baseX + bd.width / 2 + bd.strokeWidth / 2 + options.fontMinMaxSize / 3 * bd.fontSizeFactor;
+    bd.minX = bd.maxX =
+      bd.baseX +
+      bd.width / 2 +
+      bd.strokeWidth / 2 +
+      (options.fontMinMaxSize / 3) * bd.fontSizeFactor;
     bd.minY = bd.barBottom;
     bd.maxY = bd.barTop;
-    bd.fontMinMaxBaseline = 'middle';
-    bd.fontMinMaxAlign = 'left';
+    bd.fontMinMaxBaseline = "middle";
+    bd.fontMinMaxAlign = "left";
   }
 
   if (options.dashThickness) {
     let circumference;
-    if (options.gaugeType === 'donut') {
+    if (options.gaugeType === "donut") {
       circumference = Math.PI * bd.Rm * 2;
-    } else if (options.gaugeType === 'arc') {
+    } else if (options.gaugeType === "arc") {
       circumference = Math.PI * bd.Rm;
-    } else if (options.gaugeType === 'horizontalBar') {
+    } else if (options.gaugeType === "horizontalBar") {
       circumference = bd.barRight - bd.barLeft;
-    } else if (options.gaugeType === 'verticalBar') {
+    } else if (options.gaugeType === "verticalBar") {
       circumference = bd.barBottom - bd.barTop;
     }
-    let dashCount = Math.floor(circumference / (options.dashThickness * bd.fontSizeFactor));
-    if (options.gaugeType === 'donut') {
+    let dashCount = Math.floor(
+      circumference / (options.dashThickness * bd.fontSizeFactor)
+    );
+    if (options.gaugeType === "donut") {
       // eslint-disable-next-line no-bitwise
       dashCount = (dashCount | 1) - 1;
     } else {
@@ -661,41 +834,56 @@ function barDimensions(context: DigitalGaugeCanvasRenderingContext2D,
   return bd;
 }
 
-function determineTimeseriesLabelY(options: CanvasDigitalGaugeOptions, labelY: number, fontSizeFactor: number){
+function determineTimeseriesLabelY(
+  options: CanvasDigitalGaugeOptions,
+  labelY: number,
+  fontSizeFactor: number
+) {
   if (options.showUnitTitle) {
-    return  labelY + options.fontLabelSize * fontSizeFactor * 1.2;
+    return labelY + options.fontLabelSize * fontSizeFactor * 1.2;
   } else {
     return labelY;
   }
 }
 
-function determineFontHeight(options: CanvasDigitalGaugeOptions, target: string, baseSize: number): FontHeightInfo {
-  const fontStyleStr = 'font-style:' + options['font' + target + 'Style'] + ';font-weight:' +
-    options['font' + target + 'Weight'] + ';font-size:' +
-    options['font' + target + 'Size'] * baseSize + 'px;font-family:' +
-    options['font' + target];
+function determineFontHeight(
+  options: CanvasDigitalGaugeOptions,
+  target: string,
+  baseSize: number
+): FontHeightInfo {
+  const fontStyleStr =
+    "font-style:" +
+    options["font" + target + "Style"] +
+    ";font-weight:" +
+    options["font" + target + "Weight"] +
+    ";font-size:" +
+    options["font" + target + "Size"] * baseSize +
+    "px;font-family:" +
+    options["font" + target];
   let result = CanvasDigitalGauge.heightCache[fontStyleStr];
   if (!result) {
     const fontStyle = {
-      fontFamily: options['font' + target],
-      fontSize: options['font' + target + 'Size'] * baseSize + 'px',
-      fontWeight: options['font' + target + 'Weight'],
-      fontStyle: options['font' + target + 'Style']
+      fontFamily: options["font" + target],
+      fontSize: options["font" + target + "Size"] * baseSize + "px",
+      fontWeight: options["font" + target + "Weight"],
+      fontStyle: options["font" + target + "Style"],
     };
-    const text = $('<span>Hg</span>').css(fontStyle);
-    const block = $('<div style="display: inline-block; width: 1px; height: 0;"></div>');
+    const text = $("<span>Hg</span>").css(fontStyle);
+    const block = $(
+      '<div style="display: inline-block; width: 1px; height: 0;"></div>'
+    );
 
-    const div = $('<div></div>');
+    const div = $("<div></div>");
     div.append(text, block);
 
-    const body = $('body');
+    const body = $("body");
     body.append(div);
 
     try {
       result = {};
-      block.css({verticalAlign: 'baseline'});
+      block.css({ verticalAlign: "baseline" });
       result.ascent = block.offset().top - text.offset().top;
-      block.css({verticalAlign: 'bottom'});
+      block.css({ verticalAlign: "bottom" });
       result.height = block.offset().top - text.offset().top;
       result.descent = result.height - result.ascent;
     } finally {
@@ -707,8 +895,11 @@ function determineFontHeight(options: CanvasDigitalGaugeOptions, target: string,
   return result;
 }
 
-function drawBackground(context: DigitalGaugeCanvasRenderingContext2D, options: CanvasDigitalGaugeOptions) {
-  const {barLeft, barRight, barTop, barBottom, width, baseX, strokeWidth} =
+function drawBackground(
+  context: DigitalGaugeCanvasRenderingContext2D,
+  options: CanvasDigitalGaugeOptions
+) {
+  const { barLeft, barRight, barTop, barBottom, width, baseX, strokeWidth } =
     context.barDimensions;
   if (context.barDimensions.dashLength) {
     context.setLineDash([context.barDimensions.dashLength]);
@@ -717,95 +908,139 @@ function drawBackground(context: DigitalGaugeCanvasRenderingContext2D, options: 
   context.strokeStyle = options.gaugeColor;
   context.lineWidth = strokeWidth;
   if (options.roundedLineCap) {
-    context.lineCap = 'round';
+    context.lineCap = "round";
   }
-  if (options.gaugeType === 'donut') {
-    context.arc(context.barDimensions.Cx, context.barDimensions.Cy, context.barDimensions.Rm,
-      options.donutStartAngle, options.donutEndAngle);
+  if (options.gaugeType === "donut") {
+    context.arc(
+      context.barDimensions.Cx,
+      context.barDimensions.Cy,
+      context.barDimensions.Rm,
+      options.donutStartAngle,
+      options.donutEndAngle
+    );
     context.stroke();
-  } else if (options.gaugeType === 'arc') {
-    context.arc(context.barDimensions.Cx, context.barDimensions.Cy,
-      context.barDimensions.Rm, Math.PI, 2 * Math.PI);
+  } else if (options.gaugeType === "arc") {
+    context.arc(
+      context.barDimensions.Cx,
+      context.barDimensions.Cy,
+      context.barDimensions.Rm,
+      Math.PI,
+      2 * Math.PI
+    );
     context.stroke();
-  } else if (options.gaugeType === 'horizontalBar') {
+  } else if (options.gaugeType === "horizontalBar") {
     context.moveTo(barLeft, barTop + strokeWidth / 2);
     context.lineTo(barRight, barTop + strokeWidth / 2);
     context.stroke();
-  } else if (options.gaugeType === 'verticalBar') {
+  } else if (options.gaugeType === "verticalBar") {
     context.moveTo(baseX + width / 2, barBottom);
     context.lineTo(baseX + width / 2, barTop);
     context.stroke();
   }
 }
 
-function drawText(context: DigitalGaugeCanvasRenderingContext2D, options: CanvasDigitalGaugeOptions,
-                  target: string, text: string, textX: number, textY: number) {
-  context.fillStyle = options[(options.neonGlowBrightness ? 'neonColor' : 'color') + target];
+function drawText(
+  context: DigitalGaugeCanvasRenderingContext2D,
+  options: CanvasDigitalGaugeOptions,
+  target: string,
+  text: string,
+  textX: number,
+  textY: number
+) {
+  context.fillStyle =
+    options[(options.neonGlowBrightness ? "neonColor" : "color") + target];
   context.fillText(text, textX, textY);
 }
 
-function drawDigitalTitle(context: DigitalGaugeCanvasRenderingContext2D, options: CanvasDigitalGaugeOptions) {
-  if (!options.title || typeof options.title !== 'string') {
+function drawDigitalTitle(
+  context: DigitalGaugeCanvasRenderingContext2D,
+  options: CanvasDigitalGaugeOptions
+) {
+  if (!options.title || typeof options.title !== "string") {
     return;
   }
 
-  const {titleY, width, baseX, fontSizeFactor} =
-    context.barDimensions;
+  const { titleY, width, baseX, fontSizeFactor } = context.barDimensions;
 
   const textX = Math.round(baseX + width / 2);
   const textY = titleY;
 
   context.save();
-  context.textAlign = 'center';
-  context.font = Drawings.font(options, 'Title', fontSizeFactor);
+  context.textAlign = "center";
+  context.font = Drawings.font(options, "Title", fontSizeFactor);
   context.lineWidth = 0;
-  drawText(context, options, 'Title', options.title.toUpperCase(), textX, textY);
+  drawText(
+    context,
+    options,
+    "Title",
+    options.title.toUpperCase(),
+    textX,
+    textY
+  );
   context.restore();
 }
 
-function drawDigitalLabel(context: DigitalGaugeCanvasRenderingContext2D, options: CanvasDigitalGaugeOptions, text: string, nameTextY: string) {
-  if (!text || text === '') {
+function drawDigitalLabel(
+  context: DigitalGaugeCanvasRenderingContext2D,
+  options: CanvasDigitalGaugeOptions,
+  text: string,
+  nameTextY: string
+) {
+  if (!text || text === "") {
     return;
   }
 
-  const {baseX, width, fontSizeFactor} =
-    context.barDimensions;
+  const { baseX, width, fontSizeFactor } = context.barDimensions;
 
   const textX = Math.round(baseX + width / 2);
   const textY = context.barDimensions[nameTextY];
 
   context.save();
-  context.textAlign = 'center';
-  context.font = Drawings.font(options, 'Label', fontSizeFactor);
+  context.textAlign = "center";
+  context.font = Drawings.font(options, "Label", fontSizeFactor);
   context.lineWidth = 0;
-  drawText(context, options, 'Label', text, textX, textY);
+  drawText(context, options, "Label", text, textX, textY);
   context.restore();
 }
 
-function drawDigitalMinMax(context: DigitalGaugeCanvasRenderingContext2D, options: CanvasDigitalGaugeOptions) {
-  if (options.hideMinMax || options.gaugeType === 'donut') {
+function drawDigitalMinMax(
+  context: DigitalGaugeCanvasRenderingContext2D,
+  options: CanvasDigitalGaugeOptions
+) {
+  if (options.hideMinMax || options.gaugeType === "donut") {
     return;
   }
 
-  const {minY, maxY, minX, maxX, fontSizeFactor, fontMinMaxAlign, fontMinMaxBaseline} =
-    context.barDimensions;
+  const {
+    minY,
+    maxY,
+    minX,
+    maxX,
+    fontSizeFactor,
+    fontMinMaxAlign,
+    fontMinMaxBaseline,
+  } = context.barDimensions;
 
   context.save();
   context.textAlign = fontMinMaxAlign;
   context.textBaseline = fontMinMaxBaseline;
-  context.font = Drawings.font(options, 'MinMax', fontSizeFactor);
+  context.font = Drawings.font(options, "MinMax", fontSizeFactor);
   context.lineWidth = 0;
-  drawText(context, options, 'MinMax', options.minValue + '', minX, minY);
-  drawText(context, options, 'MinMax', options.maxValue + '', maxX, maxY);
+  drawText(context, options, "MinMax", options.minValue + "", minX, minY);
+  drawText(context, options, "MinMax", options.maxValue + "", maxX, maxY);
   context.restore();
 }
 
-function drawDigitalValue(context: DigitalGaugeCanvasRenderingContext2D, options: CanvasDigitalGaugeOptions, value: any) {
+function drawDigitalValue(
+  context: DigitalGaugeCanvasRenderingContext2D,
+  options: CanvasDigitalGaugeOptions,
+  value: any
+) {
   if (options.hideValue) {
     return;
   }
 
-  const {valueY, baseX, width, fontSizeFactor, fontValueBaseline} =
+  const { valueY, baseX, width, fontSizeFactor, fontValueBaseline } =
     context.barDimensions;
 
   const textX = Math.round(baseX + width / 2);
@@ -815,16 +1050,18 @@ function drawDigitalValue(context: DigitalGaugeCanvasRenderingContext2D, options
   text += options.symbol;
 
   context.save();
-  context.textAlign = 'center';
+  context.textAlign = "center";
   context.textBaseline = fontValueBaseline;
-  context.font = Drawings.font(options, 'Value', fontSizeFactor);
+  context.font = Drawings.font(options, "Value", fontSizeFactor);
   context.lineWidth = 0;
-  drawText(context, options, 'Value', text, textX, textY);
+  drawText(context, options, "Value", text, textX, textY);
   context.restore();
 }
 
-function getProgressColor(progress: number, colorsRange: DigitalGaugeColorRange[]): string {
-
+function getProgressColor(
+  progress: number,
+  colorsRange: DigitalGaugeColorRange[]
+): string {
   if (progress === 0 || colorsRange.length === 1) {
     return colorsRange[0].rgbString;
   }
@@ -840,7 +1077,7 @@ function getProgressColor(progress: number, colorsRange: DigitalGaugeColorRange[
       const color = tinycolor({
         r: Math.floor(lower.color.r * pctLower + upper.color.r * pctUpper),
         g: Math.floor(lower.color.g * pctLower + upper.color.g * pctUpper),
-        b: Math.floor(lower.color.b * pctLower + upper.color.b * pctUpper)
+        b: Math.floor(lower.color.b * pctLower + upper.color.b * pctUpper),
       });
       return color.toRgbString();
     }
@@ -848,17 +1085,33 @@ function getProgressColor(progress: number, colorsRange: DigitalGaugeColorRange[
   return colorsRange[colorsRange.length - 1].rgbString;
 }
 
-function drawArcGlow(context: DigitalGaugeCanvasRenderingContext2D,
-                     Cx: number, Cy: number, Ri: number, Rm: number, Ro: number,
-                     color: string, progress: number, isDonut: boolean,
-                     donutStartAngle?: number, donutEndAngle?: number) {
+function drawArcGlow(
+  context: DigitalGaugeCanvasRenderingContext2D,
+  Cx: number,
+  Cy: number,
+  Ri: number,
+  Rm: number,
+  Ro: number,
+  color: string,
+  progress: number,
+  isDonut: boolean,
+  donutStartAngle?: number,
+  donutEndAngle?: number
+) {
   context.setLineDash([]);
   const strokeWidth = Ro - Ri;
   const blur = 0.55;
   const edge = strokeWidth * blur;
   context.lineWidth = strokeWidth + edge;
   const stop = blur / (2 * blur + 2);
-  const glowGradient = context.createRadialGradient(Cx, Cy, Ri - edge / 2, Cx, Cy, Ro + edge / 2);
+  const glowGradient = context.createRadialGradient(
+    Cx,
+    Cy,
+    Ri - edge / 2,
+    Cx,
+    Cy,
+    Ro + edge / 2
+  );
   const color1 = tinycolor(color).setAlpha(0.5).toRgbString();
   const color2 = tinycolor(color).setAlpha(0).toRgbString();
   glowGradient.addColorStop(0, color2);
@@ -869,16 +1122,29 @@ function drawArcGlow(context: DigitalGaugeCanvasRenderingContext2D,
   context.beginPath();
   const e = 0.01 * Math.PI;
   if (isDonut) {
-    context.arc(Cx, Cy, Rm, donutStartAngle - e, donutStartAngle +
-      (donutEndAngle - donutStartAngle) * progress + e);
+    context.arc(
+      Cx,
+      Cy,
+      Rm,
+      donutStartAngle - e,
+      donutStartAngle + (donutEndAngle - donutStartAngle) * progress + e
+    );
   } else {
     context.arc(Cx, Cy, Rm, Math.PI - e, Math.PI + Math.PI * progress + e);
   }
   context.stroke();
 }
 
-function drawBarGlow(context: DigitalGaugeCanvasRenderingContext2D, startX: number, startY: number,
-                     endX: number, endY: number, color: string, strokeWidth: number, isVertical: boolean) {
+function drawBarGlow(
+  context: DigitalGaugeCanvasRenderingContext2D,
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+  color: string,
+  strokeWidth: number,
+  isVertical: boolean
+) {
   context.setLineDash([]);
   const blur = 0.55;
   const edge = strokeWidth * blur;
@@ -889,7 +1155,12 @@ function drawBarGlow(context: DigitalGaugeCanvasRenderingContext2D, startX: numb
   const gradientStopX = isVertical ? startX + context.lineWidth / 2 : 0;
   const gradientStopY = isVertical ? 0 : startY + context.lineWidth / 2;
 
-  const glowGradient = context.createLinearGradient(gradientStartX, gradientStartY, gradientStopX, gradientStopY);
+  const glowGradient = context.createLinearGradient(
+    gradientStartX,
+    gradientStartY,
+    gradientStopX,
+    gradientStopY
+  );
   const color1 = tinycolor(color).setAlpha(0.5).toRgbString();
   const color2 = tinycolor(color).setAlpha(0).toRgbString();
   glowGradient.addColorStop(0, color2);
@@ -905,9 +1176,19 @@ function drawBarGlow(context: DigitalGaugeCanvasRenderingContext2D, startX: numb
   context.stroke();
 }
 
-function drawTickArc(context: DigitalGaugeCanvasRenderingContext2D, tickValues: number[], Cx: number, Cy: number,
-                     Ri: number, Rm: number, Ro: number, startAngle: number, endAngle: number,
-                     color: string, tickWidth: number) {
+function drawTickArc(
+  context: DigitalGaugeCanvasRenderingContext2D,
+  tickValues: number[],
+  Cx: number,
+  Cy: number,
+  Ri: number,
+  Rm: number,
+  Ro: number,
+  startAngle: number,
+  endAngle: number,
+  color: string,
+  tickWidth: number
+) {
   if (!tickValues.length) {
     return;
   }
@@ -928,8 +1209,17 @@ function drawTickArc(context: DigitalGaugeCanvasRenderingContext2D, tickValues: 
   context.stroke();
 }
 
-function drawTickBar(context: DigitalGaugeCanvasRenderingContext2D, tickValues: number[], startX: number, startY: number,
-                     distanceBar: number, strokeWidth: number, isVertical: boolean, color: string, tickWidth: number) {
+function drawTickBar(
+  context: DigitalGaugeCanvasRenderingContext2D,
+  tickValues: number[],
+  startX: number,
+  startY: number,
+  distanceBar: number,
+  strokeWidth: number,
+  isVertical: boolean,
+  color: string,
+  tickWidth: number
+) {
   if (!tickValues.length) {
     return;
   }
@@ -940,8 +1230,14 @@ function drawTickBar(context: DigitalGaugeCanvasRenderingContext2D, tickValues: 
   for (const tick of tickValues) {
     const tickValue = tick * distanceBar;
     if (isVertical) {
-      context.moveTo(startX - strokeWidth / 2, startY + tickValue - distanceBar);
-      context.lineTo(startX + strokeWidth / 2, startY + tickValue - distanceBar);
+      context.moveTo(
+        startX - strokeWidth / 2,
+        startY + tickValue - distanceBar
+      );
+      context.lineTo(
+        startX + strokeWidth / 2,
+        startY + tickValue - distanceBar
+      );
     } else {
       context.moveTo(startX + tickValue, startY);
       context.lineTo(startX + tickValue, startY + strokeWidth);
@@ -950,44 +1246,92 @@ function drawTickBar(context: DigitalGaugeCanvasRenderingContext2D, tickValues: 
   context.stroke();
 }
 
-
-function drawProgress(context: DigitalGaugeCanvasRenderingContext2D,
-                      options: CanvasDigitalGaugeOptions, progress: number) {
+function drawProgress(
+  context: DigitalGaugeCanvasRenderingContext2D,
+  options: CanvasDigitalGaugeOptions,
+  progress: number
+) {
   let neonColor;
   context.save();
   if (options.neonGlowBrightness) {
-    context.currentColor = neonColor = getProgressColor(progress, options.neonColorsRange);
+    context.currentColor = neonColor = getProgressColor(
+      progress,
+      options.neonColorsRange
+    );
   } else {
-    context.currentColor = context.strokeStyle = getProgressColor(progress, options.colorsRange);
+    context.currentColor = context.strokeStyle = getProgressColor(
+      progress,
+      options.colorsRange
+    );
   }
 
-  const {barLeft, barRight, barTop, baseX, width, barBottom, Cx, Cy, Rm, Ro, Ri, strokeWidth} =
-    context.barDimensions;
+  const {
+    barLeft,
+    barRight,
+    barTop,
+    baseX,
+    width,
+    barBottom,
+    Cx,
+    Cy,
+    Rm,
+    Ro,
+    Ri,
+    strokeWidth,
+  } = context.barDimensions;
 
   if (context.barDimensions.dashLength) {
     context.setLineDash([context.barDimensions.dashLength]);
   }
   context.lineWidth = strokeWidth;
   if (options.roundedLineCap) {
-    context.lineCap = 'round';
+    context.lineCap = "round";
   } else {
-    context.lineCap = 'butt';
+    context.lineCap = "butt";
   }
-  if (options.gaugeType === 'donut') {
+  if (options.gaugeType === "donut") {
     if (options.neonGlowBrightness) {
       context.strokeStyle = neonColor;
     }
     context.beginPath();
-    context.arc(Cx, Cy, Rm, options.donutStartAngle, options.donutStartAngle +
-      (options.donutEndAngle - options.donutStartAngle) * progress);
+    context.arc(
+      Cx,
+      Cy,
+      Rm,
+      options.donutStartAngle,
+      options.donutStartAngle +
+        (options.donutEndAngle - options.donutStartAngle) * progress
+    );
     context.stroke();
     if (options.neonGlowBrightness && !options.isMobile) {
-      drawArcGlow(context, Cx, Cy, Ri, Rm, Ro, neonColor, progress, true,
-        options.donutStartAngle, options.donutEndAngle);
+      drawArcGlow(
+        context,
+        Cx,
+        Cy,
+        Ri,
+        Rm,
+        Ro,
+        neonColor,
+        progress,
+        true,
+        options.donutStartAngle,
+        options.donutEndAngle
+      );
     }
-    drawTickArc(context, options.ticksValue, Cx, Cy, Ri, Rm, Ro, options.donutStartAngle,
-      options.donutEndAngle - options.donutStartAngle, options.colorTicks, options.tickWidth);
-  } else if (options.gaugeType === 'arc') {
+    drawTickArc(
+      context,
+      options.ticksValue,
+      Cx,
+      Cy,
+      Ri,
+      Rm,
+      Ro,
+      options.donutStartAngle,
+      options.donutEndAngle - options.donutStartAngle,
+      options.colorTicks,
+      options.tickWidth
+    );
+  } else if (options.gaugeType === "arc") {
     if (options.neonGlowBrightness) {
       context.strokeStyle = neonColor;
     }
@@ -997,37 +1341,87 @@ function drawProgress(context: DigitalGaugeCanvasRenderingContext2D,
     if (options.neonGlowBrightness && !options.isMobile) {
       drawArcGlow(context, Cx, Cy, Ri, Rm, Ro, neonColor, progress, false);
     }
-    drawTickArc(context, options.ticksValue, Cx, Cy, Ri, Rm, Ro, Math.PI, Math.PI, options.colorTicks, options.tickWidth);
-  } else if (options.gaugeType === 'horizontalBar') {
+    drawTickArc(
+      context,
+      options.ticksValue,
+      Cx,
+      Cy,
+      Ri,
+      Rm,
+      Ro,
+      Math.PI,
+      Math.PI,
+      options.colorTicks,
+      options.tickWidth
+    );
+  } else if (options.gaugeType === "horizontalBar") {
     if (options.neonGlowBrightness) {
       context.strokeStyle = neonColor;
     }
     context.beginPath();
     context.moveTo(barLeft, barTop + strokeWidth / 2);
-    context.lineTo(barLeft + (barRight - barLeft) * progress, barTop + strokeWidth / 2);
+    context.lineTo(
+      barLeft + (barRight - barLeft) * progress,
+      barTop + strokeWidth / 2
+    );
     context.stroke();
     if (options.neonGlowBrightness && !options.isMobile) {
-      drawBarGlow(context, barLeft, barTop + strokeWidth / 2,
-        barLeft + (barRight - barLeft) * progress, barTop + strokeWidth / 2,
-        neonColor, strokeWidth, false);
+      drawBarGlow(
+        context,
+        barLeft,
+        barTop + strokeWidth / 2,
+        barLeft + (barRight - barLeft) * progress,
+        barTop + strokeWidth / 2,
+        neonColor,
+        strokeWidth,
+        false
+      );
     }
-    drawTickBar(context, options.ticksValue, barLeft, barTop, barRight - barLeft, strokeWidth,
-      false, options.colorTicks, options.tickWidth);
-  } else if (options.gaugeType === 'verticalBar') {
+    drawTickBar(
+      context,
+      options.ticksValue,
+      barLeft,
+      barTop,
+      barRight - barLeft,
+      strokeWidth,
+      false,
+      options.colorTicks,
+      options.tickWidth
+    );
+  } else if (options.gaugeType === "verticalBar") {
     if (options.neonGlowBrightness) {
       context.strokeStyle = neonColor;
     }
     context.beginPath();
     context.moveTo(baseX + width / 2, barBottom);
-    context.lineTo(baseX + width / 2, barBottom - (barBottom - barTop) * progress);
+    context.lineTo(
+      baseX + width / 2,
+      barBottom - (barBottom - barTop) * progress
+    );
     context.stroke();
     if (options.neonGlowBrightness && !options.isMobile) {
-      drawBarGlow(context, baseX + width / 2, barBottom,
-        baseX + width / 2, barBottom - (barBottom - barTop) * progress,
-        neonColor, strokeWidth, true);
+      drawBarGlow(
+        context,
+        baseX + width / 2,
+        barBottom,
+        baseX + width / 2,
+        barBottom - (barBottom - barTop) * progress,
+        neonColor,
+        strokeWidth,
+        true
+      );
     }
-    drawTickBar(context, options.ticksValue, baseX + width / 2, barTop, barTop - barBottom, strokeWidth,
-      true, options.colorTicks, options.tickWidth);
+    drawTickBar(
+      context,
+      options.ticksValue,
+      baseX + width / 2,
+      barTop,
+      barTop - barBottom,
+      strokeWidth,
+      true,
+      options.colorTicks,
+      options.tickWidth
+    );
   }
 
   context.restore();

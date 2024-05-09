@@ -14,9 +14,9 @@
 /// limitations under the License.
 ///
 
-import { Injectable } from '@angular/core';
-import { UtilsService } from '@core/services/utils.service';
-import { TimeService } from '@core/services/time.service';
+import { Injectable } from "@angular/core";
+import { UtilsService } from "@core/services/utils.service";
+import { TimeService } from "@core/services/time.service";
 import {
   Dashboard,
   DashboardConfiguration,
@@ -27,31 +27,32 @@ import {
   DashboardState,
   DashboardStateLayouts,
   GridSettings,
-  WidgetLayout
-} from '@shared/models/dashboard.models';
-import { isDefined, isString, isUndefined } from '@core/utils';
+  WidgetLayout,
+} from "@shared/models/dashboard.models";
+import { isDefined, isString, isUndefined } from "@core/utils";
 import {
   Datasource,
   datasourcesHasOnlyComparisonAggregation,
   DatasourceType,
   Widget,
   WidgetConfig,
-  widgetType
-} from '@app/shared/models/widget.models';
-import { EntityType } from '@shared/models/entity-type.models';
-import { AliasFilterType, EntityAlias, EntityAliasFilter } from '@app/shared/models/alias.models';
-import { EntityId } from '@app/shared/models/id/entity-id';
-import { initModelFromDefaultTimewindow } from '@shared/models/time/time.models';
-import { AlarmSearchStatus } from '@shared/models/alarm.models';
+  widgetType,
+} from "@app/shared/models/widget.models";
+import { EntityType } from "@shared/models/entity-type.models";
+import {
+  AliasFilterType,
+  EntityAlias,
+  EntityAliasFilter,
+} from "@app/shared/models/alias.models";
+import { EntityId } from "@app/shared/models/id/entity-id";
+import { initModelFromDefaultTimewindow } from "@shared/models/time/time.models";
+import { AlarmSearchStatus } from "@shared/models/alarm.models";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class DashboardUtilsService {
-
-  constructor(private utils: UtilsService,
-              private timeService: TimeService) {
-  }
+  constructor(private utils: UtilsService, private timeService: TimeService) {}
 
   public validateAndUpdateDashboard(dashboard: Dashboard): Dashboard {
     if (!dashboard.configuration) {
@@ -60,7 +61,7 @@ export class DashboardUtilsService {
     if (isUndefined(dashboard.configuration.widgets)) {
       dashboard.configuration.widgets = {};
     } else if (Array.isArray(dashboard.configuration.widgets)) {
-      const widgetsMap: {[id: string]: Widget} = {};
+      const widgetsMap: { [id: string]: Widget } = {};
       dashboard.configuration.widgets.forEach((widget) => {
         if (!widget.id) {
           widget.id = this.utils.guid();
@@ -71,11 +72,12 @@ export class DashboardUtilsService {
     }
     for (const id of Object.keys(dashboard.configuration.widgets)) {
       const widget = dashboard.configuration.widgets[id];
-      dashboard.configuration.widgets[id] = this.validateAndUpdateWidget(widget);
+      dashboard.configuration.widgets[id] =
+        this.validateAndUpdateWidget(widget);
     }
     if (isUndefined(dashboard.configuration.states)) {
       dashboard.configuration.states = {
-        default: this.createDefaultState(dashboard.title, true)
+        default: this.createDefaultState(dashboard.title, true),
       };
 
       const mainLayout = dashboard.configuration.states.default.layouts.main;
@@ -85,7 +87,7 @@ export class DashboardUtilsService {
           sizeX: widget.sizeX,
           sizeY: widget.sizeY,
           row: widget.row,
-          col: widget.col
+          col: widget.col,
         };
         if (isDefined(widget.config.mobileHeight)) {
           mainLayout.widgets[id].mobileHeight = widget.config.mobileHeight;
@@ -111,11 +113,15 @@ export class DashboardUtilsService {
         states[firstStateId].root = true;
       }
     }
-    const datasourcesByAliasId: {[aliasId: string]: Array<Datasource>} = {};
-    const targetDevicesByAliasId: {[aliasId: string]: Array<Array<string>>} = {};
+    const datasourcesByAliasId: { [aliasId: string]: Array<Datasource> } = {};
+    const targetDevicesByAliasId: { [aliasId: string]: Array<Array<string>> } =
+      {};
     for (const widgetId of Object.keys(dashboard.configuration.widgets)) {
       const widget = dashboard.configuration.widgets[widgetId];
-      const datasources = widget.type === widgetType.alarm ? [widget.config.alarmSource] : widget.config.datasources;
+      const datasources =
+        widget.type === widgetType.alarm
+          ? [widget.config.alarmSource]
+          : widget.config.datasources;
       datasources.forEach((datasource) => {
         if (datasource.entityAliasId) {
           const aliasId = datasource.entityAliasId;
@@ -127,7 +133,10 @@ export class DashboardUtilsService {
           aliasDatasources.push(datasource);
         }
       });
-      if (widget.config.targetDeviceAliasIds && widget.config.targetDeviceAliasIds.length) {
+      if (
+        widget.config.targetDeviceAliasIds &&
+        widget.config.targetDeviceAliasIds.length
+      ) {
         const aliasId = widget.config.targetDeviceAliasIds[0];
         let targetDeviceAliasIdsList = targetDevicesByAliasId[aliasId];
         if (!targetDeviceAliasIdsList) {
@@ -138,7 +147,11 @@ export class DashboardUtilsService {
       }
     }
 
-    dashboard.configuration = this.validateAndUpdateEntityAliases(dashboard.configuration, datasourcesByAliasId, targetDevicesByAliasId);
+    dashboard.configuration = this.validateAndUpdateEntityAliases(
+      dashboard.configuration,
+      datasourcesByAliasId,
+      targetDevicesByAliasId
+    );
     if (!dashboard.configuration.filters) {
       dashboard.configuration.filters = {};
     }
@@ -148,7 +161,7 @@ export class DashboardUtilsService {
     }
     if (isUndefined(dashboard.configuration.settings)) {
       dashboard.configuration.settings = {};
-      dashboard.configuration.settings.stateControllerId = 'entity';
+      dashboard.configuration.settings.stateControllerId = "entity";
       dashboard.configuration.settings.showTitle = false;
       dashboard.configuration.settings.showDashboardsSelect = true;
       dashboard.configuration.settings.showEntitiesSelect = true;
@@ -157,7 +170,7 @@ export class DashboardUtilsService {
       dashboard.configuration.settings.toolbarAlwaysOpen = true;
     } else {
       if (isUndefined(dashboard.configuration.settings.stateControllerId)) {
-        dashboard.configuration.settings.stateControllerId = 'entity';
+        dashboard.configuration.settings.stateControllerId = "entity";
       }
     }
     if (isDefined(dashboard.configuration.gridSettings)) {
@@ -171,22 +184,27 @@ export class DashboardUtilsService {
         delete gridSettings.titleColor;
       }
       if (isDefined(gridSettings.showDevicesSelect)) {
-        dashboard.configuration.settings.showEntitiesSelect = gridSettings.showDevicesSelect;
+        dashboard.configuration.settings.showEntitiesSelect =
+          gridSettings.showDevicesSelect;
         delete gridSettings.showDevicesSelect;
       }
       if (isDefined(gridSettings.showEntitiesSelect)) {
-        dashboard.configuration.settings.showEntitiesSelect = gridSettings.showEntitiesSelect;
+        dashboard.configuration.settings.showEntitiesSelect =
+          gridSettings.showEntitiesSelect;
         delete gridSettings.showEntitiesSelect;
       }
       if (isDefined(gridSettings.showDashboardTimewindow)) {
-        dashboard.configuration.settings.showDashboardTimewindow = gridSettings.showDashboardTimewindow;
+        dashboard.configuration.settings.showDashboardTimewindow =
+          gridSettings.showDashboardTimewindow;
         delete gridSettings.showDashboardTimewindow;
       }
       if (isDefined(gridSettings.showDashboardExport)) {
-        dashboard.configuration.settings.showDashboardExport = gridSettings.showDashboardExport;
+        dashboard.configuration.settings.showDashboardExport =
+          gridSettings.showDashboardExport;
         delete gridSettings.showDashboardExport;
       }
-      dashboard.configuration.states.default.layouts.main.gridSettings = gridSettings;
+      dashboard.configuration.states.default.layouts.main.gridSettings =
+        gridSettings;
       delete dashboard.configuration.gridSettings;
     }
     return dashboard;
@@ -209,15 +227,25 @@ export class DashboardUtilsService {
   }
 
   public validateAndUpdateWidget(widget: Widget): Widget {
-    widget.config = this.validateAndUpdateWidgetConfig(widget.config, widget.type);
+    widget.config = this.validateAndUpdateWidgetConfig(
+      widget.config,
+      widget.type
+    );
     // Temp workaround
-    if (widget.isSystemType  && widget.bundleAlias === 'charts' && widget.typeAlias === 'timeseries') {
-      widget.typeAlias = 'basic_timeseries';
+    if (
+      widget.isSystemType &&
+      widget.bundleAlias === "charts" &&
+      widget.typeAlias === "timeseries"
+    ) {
+      widget.typeAlias = "basic_timeseries";
     }
     return widget;
   }
 
-  public validateAndUpdateWidgetConfig(widgetConfig: WidgetConfig | undefined, type: widgetType): WidgetConfig {
+  public validateAndUpdateWidgetConfig(
+    widgetConfig: WidgetConfig | undefined,
+    type: widgetType
+  ): WidgetConfig {
     if (!widgetConfig) {
       widgetConfig = {};
     }
@@ -225,7 +253,7 @@ export class DashboardUtilsService {
       widgetConfig.datasources = [];
     }
     widgetConfig.datasources.forEach((datasource) => {
-      if (datasource.type === 'device') {
+      if (datasource.type === "device") {
         datasource.type = DatasourceType.entity;
       }
       if (datasource.deviceAliasId) {
@@ -234,16 +262,29 @@ export class DashboardUtilsService {
       }
     });
     if (type === widgetType.latest) {
-      const onlyHistoryTimewindow = datasourcesHasOnlyComparisonAggregation(widgetConfig.datasources);
-      widgetConfig.timewindow = initModelFromDefaultTimewindow(widgetConfig.timewindow, true, onlyHistoryTimewindow, this.timeService);
+      const onlyHistoryTimewindow = datasourcesHasOnlyComparisonAggregation(
+        widgetConfig.datasources
+      );
+      widgetConfig.timewindow = initModelFromDefaultTimewindow(
+        widgetConfig.timewindow,
+        true,
+        onlyHistoryTimewindow,
+        this.timeService
+      );
     }
     if (type === widgetType.alarm) {
       if (!widgetConfig.alarmFilterConfig) {
         widgetConfig.alarmFilterConfig = {};
         const alarmFilterConfig = widgetConfig.alarmFilterConfig;
-        if (isDefined(widgetConfig.alarmStatusList) && widgetConfig.alarmStatusList.length) {
+        if (
+          isDefined(widgetConfig.alarmStatusList) &&
+          widgetConfig.alarmStatusList.length
+        ) {
           alarmFilterConfig.statusList = widgetConfig.alarmStatusList;
-        } else if (isDefined(widgetConfig.alarmSearchStatus) && widgetConfig.alarmSearchStatus !== AlarmSearchStatus.ANY) {
+        } else if (
+          isDefined(widgetConfig.alarmSearchStatus) &&
+          widgetConfig.alarmSearchStatus !== AlarmSearchStatus.ANY
+        ) {
           alarmFilterConfig.statusList = [widgetConfig.alarmSearchStatus];
         } else {
           alarmFilterConfig.statusList = [];
@@ -267,7 +308,8 @@ export class DashboardUtilsService {
           alarmFilterConfig.typeList = [];
         }
         if (isDefined(widgetConfig.searchPropagatedAlarms)) {
-          alarmFilterConfig.searchPropagatedAlarms = widgetConfig.searchPropagatedAlarms;
+          alarmFilterConfig.searchPropagatedAlarms =
+            widgetConfig.searchPropagatedAlarms;
           delete widgetConfig.searchPropagatedAlarms;
         } else {
           alarmFilterConfig.searchPropagatedAlarms = true;
@@ -280,23 +322,23 @@ export class DashboardUtilsService {
   public createDefaultLayoutData(): DashboardLayout {
     return {
       widgets: {},
-      gridSettings: this.createDefaultGridSettings()
+      gridSettings: this.createDefaultGridSettings(),
     };
   }
 
   private createDefaultGridSettings(): GridSettings {
     return {
-      backgroundColor: '#eeeeee',
+      backgroundColor: "#f7f8fa",
       columns: 24,
       margin: 10,
       outerMargin: true,
-      backgroundSizeMode: '100%'
+      backgroundSizeMode: "100%",
     };
   }
 
   public createDefaultLayouts(): DashboardStateLayouts {
     return {
-      main: this.createDefaultLayoutData()
+      main: this.createDefaultLayoutData(),
     };
   }
 
@@ -304,7 +346,7 @@ export class DashboardUtilsService {
     return {
       name,
       root,
-      layouts: this.createDefaultLayouts()
+      layouts: this.createDefaultLayouts(),
     };
   }
 
@@ -312,7 +354,7 @@ export class DashboardUtilsService {
     return {
       type: AliasFilterType.singleEntity,
       singleEntity: entityId,
-      resolveMultiple: false
+      resolveMultiple: false,
     };
   }
 
@@ -330,15 +372,26 @@ export class DashboardUtilsService {
     if (!layout.gridSettings) {
       layout.gridSettings = this.createDefaultGridSettings();
     }
-    if (layout.gridSettings.margins && layout.gridSettings.margins.length === 2) {
+    if (
+      layout.gridSettings.margins &&
+      layout.gridSettings.margins.length === 2
+    ) {
       layout.gridSettings.margin = layout.gridSettings.margins[0];
       delete layout.gridSettings.margins;
     }
-    layout.gridSettings.outerMargin = isDefined(layout.gridSettings.outerMargin) ? layout.gridSettings.outerMargin : true;
-    layout.gridSettings.margin = isDefined(layout.gridSettings.margin) ? layout.gridSettings.margin : 10;
+    layout.gridSettings.outerMargin = isDefined(layout.gridSettings.outerMargin)
+      ? layout.gridSettings.outerMargin
+      : true;
+    layout.gridSettings.margin = isDefined(layout.gridSettings.margin)
+      ? layout.gridSettings.margin
+      : 10;
   }
 
-  public setLayouts(dashboard: Dashboard, targetState: string, newLayouts: DashboardStateLayouts) {
+  public setLayouts(
+    dashboard: Dashboard,
+    targetState: string,
+    newLayouts: DashboardStateLayouts
+  ) {
     const dashboardConfiguration = dashboard.configuration;
     const states = dashboardConfiguration.states;
     const state = states[targetState];
@@ -359,7 +412,10 @@ export class DashboardUtilsService {
     let newColumns;
     if (addedCount) {
       for (const l of Object.keys(state.layouts)) {
-        newColumns = state.layouts[l].gridSettings.columns * (layoutsCount - addedCount) / layoutsCount;
+        newColumns =
+          (state.layouts[l].gridSettings.columns *
+            (layoutsCount - addedCount)) /
+          layoutsCount;
         if (newColumns > 0) {
           state.layouts[l].gridSettings.columns = newColumns;
         }
@@ -367,7 +423,10 @@ export class DashboardUtilsService {
     }
     if (removedCount) {
       for (const l of Object.keys(state.layouts)) {
-        newColumns = state.layouts[l].gridSettings.columns * (layoutsCount + removedCount) / layoutsCount;
+        newColumns =
+          (state.layouts[l].gridSettings.columns *
+            (layoutsCount + removedCount)) /
+          layoutsCount;
         if (newColumns > 0) {
           state.layouts[l].gridSettings.columns = newColumns;
         }
@@ -376,7 +435,7 @@ export class DashboardUtilsService {
     this.removeUnusedWidgets(dashboard);
   }
 
-  public getRootStateId(states: {[id: string]: DashboardState }): string {
+  public getRootStateId(states: { [id: string]: DashboardState }): string {
     for (const stateId of Object.keys(states)) {
       const state = states[stateId];
       if (state.root) {
@@ -386,7 +445,10 @@ export class DashboardUtilsService {
     return Object.keys(states)[0];
   }
 
-  public getStateLayoutsData(dashboard: Dashboard, targetState: string): DashboardLayoutsInfo {
+  public getStateLayoutsData(
+    dashboard: Dashboard,
+    targetState: string
+  ): DashboardLayoutsInfo {
     const dashboardConfiguration = dashboard.configuration;
     const states = dashboardConfiguration.states;
     const state = states[targetState];
@@ -398,7 +460,7 @@ export class DashboardUtilsService {
           result[l] = {
             widgetIds: [],
             widgetLayouts: {},
-            gridSettings: {}
+            gridSettings: {},
           } as DashboardLayoutInfo;
           for (const id of Object.keys(layout.widgets)) {
             result[l].widgetIds.push(id);
@@ -424,14 +486,16 @@ export class DashboardUtilsService {
     return widgetsArray;
   }
 
-  public addWidgetToLayout(dashboard: Dashboard,
-                           targetState: string,
-                           targetLayout: DashboardLayoutId,
-                           widget: Widget,
-                           originalColumns?: number,
-                           originalSize?: {sizeX: number, sizeY: number},
-                           row?: number,
-                           column?: number): void {
+  public addWidgetToLayout(
+    dashboard: Dashboard,
+    targetState: string,
+    targetLayout: DashboardLayoutId,
+    widget: Widget,
+    originalColumns?: number,
+    originalSize?: { sizeX: number; sizeY: number },
+    row?: number,
+    column?: number
+  ): void {
     const dashboardConfiguration = dashboard.configuration;
     const states = dashboardConfiguration.states;
     const state = states[targetState];
@@ -449,7 +513,7 @@ export class DashboardUtilsService {
       mobileOrder: widget.config.mobileOrder,
       mobileHeight: widget.config.mobileHeight,
       mobileHide: widget.config.mobileHide,
-      desktopHide: widget.config.desktopHide
+      desktopHide: widget.config.desktopHide,
     };
     if (isUndefined(originalColumns)) {
       originalColumns = 24;
@@ -466,7 +530,7 @@ export class DashboardUtilsService {
       widgetLayout.sizeY *= ratio;
     }
 
-    if (row > -1 && column > - 1) {
+    if (row > -1 && column > -1) {
       widgetLayout.row = row;
       widgetLayout.col = column;
     } else {
@@ -490,10 +554,12 @@ export class DashboardUtilsService {
     layout.widgets[widget.id] = widgetLayout;
   }
 
-  public removeWidgetFromLayout(dashboard: Dashboard,
-                                targetState: string,
-                                targetLayout: DashboardLayoutId,
-                                widgetId: string) {
+  public removeWidgetFromLayout(
+    dashboard: Dashboard,
+    targetState: string,
+    targetLayout: DashboardLayoutId,
+    widgetId: string
+  ) {
     const dashboardConfiguration = dashboard.configuration;
     const states = dashboardConfiguration.states;
     const state = states[targetState];
@@ -502,7 +568,10 @@ export class DashboardUtilsService {
     this.removeUnusedWidgets(dashboard);
   }
 
-  public isSingleLayoutDashboard(dashboard: Dashboard): {state: string, layout: DashboardLayoutId} {
+  public isSingleLayoutDashboard(dashboard: Dashboard): {
+    state: string;
+    layout: DashboardLayoutId;
+  } {
     const dashboardConfiguration = dashboard.configuration;
     const states = dashboardConfiguration.states;
     const stateKeys = Object.keys(states);
@@ -513,14 +582,17 @@ export class DashboardUtilsService {
       if (layoutKeys.length === 1) {
         return {
           state: stateKeys[0],
-          layout: layoutKeys[0] as DashboardLayoutId
+          layout: layoutKeys[0] as DashboardLayoutId,
         };
       }
     }
     return null;
   }
 
-  public updateLayoutSettings(layout: DashboardLayout, gridSettings: GridSettings) {
+  public updateLayoutSettings(
+    layout: DashboardLayout,
+    gridSettings: GridSettings
+  ) {
     const prevGridSettings = layout.gridSettings;
     let prevColumns = prevGridSettings ? prevGridSettings.columns : 24;
     if (!prevColumns) {
@@ -580,9 +652,11 @@ export class DashboardUtilsService {
     }
   }
 
-  private validateAndUpdateEntityAliases(configuration: DashboardConfiguration,
-                                         datasourcesByAliasId: {[aliasId: string]: Array<Datasource>},
-                                         targetDevicesByAliasId: {[aliasId: string]: Array<Array<string>>}): DashboardConfiguration {
+  private validateAndUpdateEntityAliases(
+    configuration: DashboardConfiguration,
+    datasourcesByAliasId: { [aliasId: string]: Array<Datasource> },
+    targetDevicesByAliasId: { [aliasId: string]: Array<Array<string>> }
+  ): DashboardConfiguration {
     let entityAlias: EntityAlias;
     if (isUndefined(configuration.entityAliases)) {
       configuration.entityAliases = {};
@@ -590,7 +664,12 @@ export class DashboardUtilsService {
         const deviceAliases = configuration.deviceAliases;
         for (const aliasId of Object.keys(deviceAliases)) {
           const deviceAlias = deviceAliases[aliasId];
-          entityAlias = this.validateAndUpdateDeviceAlias(aliasId, deviceAlias, datasourcesByAliasId, targetDevicesByAliasId);
+          entityAlias = this.validateAndUpdateDeviceAlias(
+            aliasId,
+            deviceAlias,
+            datasourcesByAliasId,
+            targetDevicesByAliasId
+          );
           configuration.entityAliases[entityAlias.id] = entityAlias;
         }
         delete configuration.deviceAliases;
@@ -599,7 +678,12 @@ export class DashboardUtilsService {
       const entityAliases = configuration.entityAliases;
       for (const aliasId of Object.keys(entityAliases)) {
         entityAlias = entityAliases[aliasId];
-        entityAlias = this.validateAndUpdateEntityAlias(aliasId, entityAlias, datasourcesByAliasId, targetDevicesByAliasId);
+        entityAlias = this.validateAndUpdateEntityAlias(
+          aliasId,
+          entityAlias,
+          datasourcesByAliasId,
+          targetDevicesByAliasId
+        );
         if (aliasId !== entityAlias.id) {
           delete entityAliases[aliasId];
         }
@@ -609,11 +693,17 @@ export class DashboardUtilsService {
     return configuration;
   }
 
-  private validateAndUpdateDeviceAlias(aliasId: string,
-                                       deviceAlias: any,
-                                       datasourcesByAliasId: {[aliasId: string]: Array<Datasource>},
-                                       targetDevicesByAliasId: {[aliasId: string]: Array<Array<string>>}): EntityAlias {
-    aliasId = this.validateAliasId(aliasId, datasourcesByAliasId, targetDevicesByAliasId);
+  private validateAndUpdateDeviceAlias(
+    aliasId: string,
+    deviceAlias: any,
+    datasourcesByAliasId: { [aliasId: string]: Array<Datasource> },
+    targetDevicesByAliasId: { [aliasId: string]: Array<Array<string>> }
+  ): EntityAlias {
+    aliasId = this.validateAliasId(
+      aliasId,
+      datasourcesByAliasId,
+      targetDevicesByAliasId
+    );
     const alias = deviceAlias.alias;
     const entityAlias: EntityAlias = {
       id: aliasId,
@@ -621,16 +711,18 @@ export class DashboardUtilsService {
       filter: {
         type: null,
         entityType: EntityType.DEVICE,
-        resolveMultiple: false
+        resolveMultiple: false,
       },
     };
     if (deviceAlias.deviceFilter) {
-      entityAlias.filter.type =
-        deviceAlias.deviceFilter.useFilter ? AliasFilterType.entityName : AliasFilterType.entityList;
+      entityAlias.filter.type = deviceAlias.deviceFilter.useFilter
+        ? AliasFilterType.entityName
+        : AliasFilterType.entityList;
       if (entityAlias.filter.type === AliasFilterType.entityList) {
         entityAlias.filter.entityList = deviceAlias.deviceFilter.deviceList;
       } else {
-        entityAlias.filter.entityNameFilter = deviceAlias.deviceFilter.deviceNameFilter;
+        entityAlias.filter.entityNameFilter =
+          deviceAlias.deviceFilter.deviceNameFilter;
       }
     } else {
       entityAlias.filter.type = AliasFilterType.entityList;
@@ -639,29 +731,42 @@ export class DashboardUtilsService {
     return entityAlias;
   }
 
-  private validateAndUpdateEntityAlias(aliasId: string, entityAlias: EntityAlias,
-                                       datasourcesByAliasId: {[aliasId: string]: Array<Datasource>},
-                                       targetDevicesByAliasId: {[aliasId: string]: Array<Array<string>>}): EntityAlias {
-    entityAlias.id = this.validateAliasId(aliasId, datasourcesByAliasId, targetDevicesByAliasId);
+  private validateAndUpdateEntityAlias(
+    aliasId: string,
+    entityAlias: EntityAlias,
+    datasourcesByAliasId: { [aliasId: string]: Array<Datasource> },
+    targetDevicesByAliasId: { [aliasId: string]: Array<Array<string>> }
+  ): EntityAlias {
+    entityAlias.id = this.validateAliasId(
+      aliasId,
+      datasourcesByAliasId,
+      targetDevicesByAliasId
+    );
     if (!entityAlias.filter) {
       entityAlias.filter = {
-        type: entityAlias.entityFilter.useFilter ? AliasFilterType.entityName : AliasFilterType.entityList,
+        type: entityAlias.entityFilter.useFilter
+          ? AliasFilterType.entityName
+          : AliasFilterType.entityList,
         entityType: entityAlias.entityType,
-        resolveMultiple: false
+        resolveMultiple: false,
       };
       if (entityAlias.filter.type === AliasFilterType.entityList) {
         entityAlias.filter.entityList = entityAlias.entityFilter.entityList;
       } else {
-        entityAlias.filter.entityNameFilter = entityAlias.entityFilter.entityNameFilter;
+        entityAlias.filter.entityNameFilter =
+          entityAlias.entityFilter.entityNameFilter;
       }
       delete entityAlias.entityType;
       delete entityAlias.entityFilter;
     }
-    entityAlias = this.validateAndUpdateEntityAliasSingleTypeFilters(entityAlias);
+    entityAlias =
+      this.validateAndUpdateEntityAliasSingleTypeFilters(entityAlias);
     return entityAlias;
   }
 
-  private validateAndUpdateEntityAliasSingleTypeFilters(entityAlias: EntityAlias): EntityAlias {
+  private validateAndUpdateEntityAliasSingleTypeFilters(
+    entityAlias: EntityAlias
+  ): EntityAlias {
     if (entityAlias.filter.type === AliasFilterType.deviceType) {
       if (entityAlias.filter.deviceType) {
         if (!entityAlias.filter.deviceTypes) {
@@ -685,7 +790,9 @@ export class DashboardUtilsService {
         if (!entityAlias.filter.entityViewTypes) {
           entityAlias.filter.entityViewTypes = [];
         }
-        entityAlias.filter.entityViewTypes.push(entityAlias.filter.entityViewType);
+        entityAlias.filter.entityViewTypes.push(
+          entityAlias.filter.entityViewType
+        );
         delete entityAlias.filter.entityViewType;
       }
     }
@@ -701,31 +808,28 @@ export class DashboardUtilsService {
     return entityAlias;
   }
 
-  private validateAliasId(aliasId: string,
-                          datasourcesByAliasId: {[aliasId: string]: Array<Datasource>},
-                          targetDevicesByAliasId: {[aliasId: string]: Array<Array<string>>}): string {
+  private validateAliasId(
+    aliasId: string,
+    datasourcesByAliasId: { [aliasId: string]: Array<Datasource> },
+    targetDevicesByAliasId: { [aliasId: string]: Array<Array<string>> }
+  ): string {
     if (!aliasId || !isString(aliasId) || aliasId.length !== 36) {
       const newAliasId = this.utils.guid();
       const aliasDatasources = datasourcesByAliasId[aliasId];
       if (aliasDatasources) {
-        aliasDatasources.forEach(
-          (datasource) => {
-            datasource.entityAliasId = newAliasId;
-          }
-        );
+        aliasDatasources.forEach((datasource) => {
+          datasource.entityAliasId = newAliasId;
+        });
       }
       const targetDeviceAliasIdsList = targetDevicesByAliasId[aliasId];
       if (targetDeviceAliasIdsList) {
-        targetDeviceAliasIdsList.forEach(
-          (targetDeviceAliasIds) => {
-            targetDeviceAliasIds[0] = newAliasId;
-          }
-        );
+        targetDeviceAliasIdsList.forEach((targetDeviceAliasIds) => {
+          targetDeviceAliasIds[0] = newAliasId;
+        });
       }
       return newAliasId;
     } else {
       return aliasId;
     }
   }
-
 }

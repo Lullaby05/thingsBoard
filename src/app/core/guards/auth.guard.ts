@@ -14,36 +14,43 @@
 /// limitations under the License.
 ///
 
-import { Injectable, NgZone } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, Router, RouterStateSnapshot } from '@angular/router';
-import { AuthService } from '../auth/auth.service';
-import { select, Store } from '@ngrx/store';
-import { AppState } from '../core.state';
-import { selectAuth } from '../auth/auth.selectors';
-import { catchError, map, mergeMap, skipWhile, take } from 'rxjs/operators';
-import { AuthState } from '../auth/auth.models';
-import { forkJoin, Observable, of } from 'rxjs';
-import { enterZone } from '@core/operator/enterZone';
-import { Authority } from '@shared/models/authority.enum';
-import { DialogService } from '@core/services/dialog.service';
-import { TranslateService } from '@ngx-translate/core';
-import { UtilsService } from '@core/services/utils.service';
-import { isObject } from '@core/utils';
-import { MobileService } from '@core/services/mobile.service';
+import { Injectable, NgZone } from "@angular/core";
+import {
+  ActivatedRouteSnapshot,
+  CanActivate,
+  CanActivateChild,
+  Router,
+  RouterStateSnapshot,
+} from "@angular/router";
+import { AuthService } from "../auth/auth.service";
+import { select, Store } from "@ngrx/store";
+import { AppState } from "../core.state";
+import { selectAuth } from "../auth/auth.selectors";
+import { catchError, map, mergeMap, skipWhile, take } from "rxjs/operators";
+import { AuthState } from "../auth/auth.models";
+import { forkJoin, Observable, of } from "rxjs";
+import { enterZone } from "@core/operator/enterZone";
+import { Authority } from "@shared/models/authority.enum";
+import { DialogService } from "@core/services/dialog.service";
+import { TranslateService } from "@ngx-translate/core";
+import { UtilsService } from "@core/services/utils.service";
+import { isObject } from "@core/utils";
+import { MobileService } from "@core/services/mobile.service";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class AuthGuard implements CanActivate, CanActivateChild {
-
-  constructor(private store: Store<AppState>,
-              private router: Router,
-              private authService: AuthService,
-              private dialogService: DialogService,
-              private utils: UtilsService,
-              private translate: TranslateService,
-              private mobileService: MobileService,
-              private zone: NgZone) {}
+  constructor(
+    private store: Store<AppState>,
+    private router: Router,
+    private authService: AuthService,
+    private dialogService: DialogService,
+    private utils: UtilsService,
+    private translate: TranslateService,
+    private mobileService: MobileService,
+    private zone: NgZone
+  ) {}
 
   getAuthState(): Observable<AuthState> {
     return this.store.pipe(
@@ -54,9 +61,7 @@ export class AuthGuard implements CanActivate, CanActivateChild {
     );
   }
 
-  canActivate(next: ActivatedRouteSnapshot,
-              state: RouterStateSnapshot) {
-
+  canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
     return this.getAuthState().pipe(
       mergeMap((authState) => {
         const url: string = state.url;
@@ -64,19 +69,19 @@ export class AuthGuard implements CanActivate, CanActivateChild {
         let lastChild = state.root;
         const urlSegments: string[] = [];
         if (lastChild.url) {
-          urlSegments.push(...lastChild.url.map(segment => segment.path));
+          urlSegments.push(...lastChild.url.map((segment) => segment.path));
         }
         while (lastChild.children.length) {
           lastChild = lastChild.children[0];
           if (lastChild.url) {
-            urlSegments.push(...lastChild.url.map(segment => segment.path));
+            urlSegments.push(...lastChild.url.map((segment) => segment.path));
           }
         }
-        const path = urlSegments.join('.');
-        const publicId = this.utils.getQueryParam('publicId');
+        const path = urlSegments.join(".");
+        const publicId = this.utils.getQueryParam("publicId");
         const data = lastChild.data || {};
         const params = lastChild.params || {};
-        const isPublic = data.module === 'public';
+        const isPublic = data.module === "public";
 
         if (!authState.isAuthenticated || isPublic) {
           if (publicId && publicId.length > 0) {
@@ -88,14 +93,17 @@ export class AuthGuard implements CanActivate, CanActivateChild {
             // this.authService.gotoDefaultPlace(false);
             return of(this.authService.defaultUrl(false));
           } else {
-            if (path === 'login') {
+            if (path === "login") {
               return forkJoin([this.authService.loadOAuth2Clients()]).pipe(
                 map(() => {
                   return true;
                 })
               );
-            } else if (path === 'login.mfa') {
-              if (authState.authUser?.authority === Authority.PRE_VERIFICATION_TOKEN) {
+            } else if (path === "login.mfa") {
+              if (
+                authState.authUser?.authority ===
+                Authority.PRE_VERIFICATION_TOKEN
+              ) {
                 return this.authService.getAvailableTwoFaLoginProviders().pipe(
                   map(() => {
                     return true;
@@ -120,15 +128,25 @@ export class AuthGuard implements CanActivate, CanActivateChild {
               return of(false);
             }
           }
-          if (this.mobileService.isMobileApp() && !path.startsWith('dashboard.')) {
+          if (
+            this.mobileService.isMobileApp() &&
+            !path.startsWith("dashboard.")
+          ) {
             this.mobileService.handleMobileNavigation(path, params);
             return of(false);
           }
-          if (authState.authUser.authority === Authority.PRE_VERIFICATION_TOKEN) {
+          if (
+            authState.authUser.authority === Authority.PRE_VERIFICATION_TOKEN
+          ) {
             this.authService.logout();
             return of(false);
           }
-          const defaultUrl = this.authService.defaultUrl(true, authState, path, params);
+          const defaultUrl = this.authService.defaultUrl(
+            true,
+            authState,
+            path,
+            params
+          );
           if (defaultUrl) {
             // this.authService.gotoDefaultPlace(true);
             return of(defaultUrl);
@@ -146,18 +164,28 @@ export class AuthGuard implements CanActivate, CanActivateChild {
               }
               return of(this.router.parseUrl(redirect));
             } else {
+              if (navigator.userAgent.includes("Electron")) {
+                window.parent.postMessage(
+                  {
+                    type: "changeRouter",
+                    url,
+                  },
+                  "*"
+                );
+              }
               return of(true);
             }
           }
         }
       }),
-      catchError((err => { console.error(err); return of(false); } ))
+      catchError((err) => {
+        console.error(err);
+        return of(false);
+      })
     );
   }
 
-  canActivateChild(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot) {
+  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
     return this.canActivate(route, state);
   }
 }

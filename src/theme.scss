@@ -309,6 +309,9 @@ $tb-dark-theme: map_merge($tb-dark-theme, $color);
   --mdc-typography-caption-font-family: "思源黑体" !important;
   --mdc-typography-body1-font-family: "思源黑体" !important;
   --mdc-typography-font-family: "思源黑体" !important;
+  .mat-drawer-container {
+    background: #f7f8fa;
+  }
 }
 .tb-default .mat-toolbar,
 .tb-default .mat-toolbar h1,

@@ -45,16 +45,20 @@
 
 @font-face {
   font-family: "思源黑体";
-  src: url("./SourceHanSansSC-Regular-2.otf");
+  /* src: url("./SourceHanSansSC-Regular-2.otf"); */
   font-weight: normal;
   font-style: normal;
+  src: local("Noto Sans SC"), local("思源黑体"), local("Source Han Sans SC"),
+    url(SourceHanSansSC-Regular-2.otf) format("truetype");
 }
 
 @font-face {
   font-family: "思源黑体 Medium";
-  src: url("./SourceHanSansOLD-Medium-2.otf");
+  /* src: url("./SourceHanSansOLD-Medium-2.otf"); */
   font-weight: normal;
   font-style: normal;
+  src: local("Noto Sans SC"), local("Source Han Sans SC"),
+    url(SourceHanSansOLD-Medium-2.otf) format("truetype");
 }
 
 .material-icons {

@@ -57,7 +57,7 @@
   }
 
   .gutter {
-    background-color: #eee;
+    background-color: #f7f8fa;
     background-repeat: no-repeat;
     background-position: 50%;
   }
@@ -81,14 +81,14 @@
     &.tb-fullscreen-editor {
       position: relative;
       right: 0;
-     /* .mat-mdc-button {
+      /* .mat-mdc-button {
         .mat-icon {
           margin-right: 5px;
         }
       } */
     }
 
-   /* .mat-mdc-button {
+    /* .mat-mdc-button {
       min-width: 36px;
       padding: 0;
       .mat-icon {
@@ -103,5 +103,3 @@
     }
   }
 }
-
-

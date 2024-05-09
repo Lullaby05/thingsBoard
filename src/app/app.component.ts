@@ -151,6 +151,9 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.messageListener = this.receiveMessage.bind(this);
     window.addEventListener("message", this.messageListener, false);
+    if (navigator.userAgent.includes("Electron")) {
+      document.body.classList.add("electron");
+    }
   }
 
   ngOnDestroy() {
@@ -158,12 +161,13 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   receiveMessage(event) {
+    const whiteList = ["http://localhost:3000", "file://"];
     // 检查发送消息的源
-    if (event.origin !== "http://localhost:3000") {
+    if (!whiteList.includes(event.origin)) {
       return;
     }
     if (event.data.type === "changeRouter") {
-      this.router.navigate([event.data.url]);
+      this.router.navigateByUrl(event.data.url);
       return;
     }
     // event.data 是发送的消息

@@ -277,6 +277,10 @@ export class RuleChainPageComponent extends PageComponent
       }
     );
   }
+  
+  goBack() {
+    history.back()
+  }
 
   ngOnInit() {
   }

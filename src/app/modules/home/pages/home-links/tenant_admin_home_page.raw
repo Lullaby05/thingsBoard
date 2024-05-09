@@ -899,7 +899,7 @@
               }
             },
             "gridSettings": {
-              "backgroundColor": "#eeeeee",
+              "backgroundColor": "#f7f8fa",
               "columns": 120,
               "margin": 12,
               "backgroundSizeMode": "100%",

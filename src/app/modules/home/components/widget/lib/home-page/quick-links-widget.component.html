@@ -18,18 +18,13 @@
 <div class="tb-card-content" fxLayout="column" fxLayoutGap="8px">
   <div class="tb-card-header">
     <div class="tb-title">{{ 'widgets.quick-links.title' | translate }}</div>
-    <button class="tb-title-icon"
-            matTooltip="{{ 'action.edit' | translate }}"
-            matTooltipPosition="above"
-            mat-icon-button
-            (click)="edit()">
+    <button class="tb-title-icon" matTooltip="{{ 'action.edit' | translate }}" matTooltipPosition="above" mat-icon-button (click)="edit()">
       <mat-icon>edit</mat-icon>
     </button>
   </div>
   <mat-grid-list class="tb-links-list" fxFlex [cols]="columns" [rowHeight]="rowHeight" [gutterSize]="gutterSize">
     <mat-grid-tile class="tb-links-tile" *ngFor="let quickLink of menuLinks$() | async">
-      <a fxFlex class="tb-link-button"
-         [routerLink]="quickLink.path">
+      <a fxFlex class="tb-link-button" [routerLink]="quickLink.path">
         <div class="tb-link-container">
           <div class="tb-link-icon-container">
             <mat-icon *ngIf="!quickLink.isMdiIcon" color="primary">{{ quickLink.icon }}</mat-icon>
@@ -40,10 +35,7 @@
       </a>
     </mat-grid-tile>
     <mat-grid-tile class="tb-links-tile">
-      <div fxFlex class="tb-add-link-button"
-           matTooltip="{{ 'widgets.quick-links.add-link' | translate }}"
-           matTooltipPosition="above"
-           (click)="addLink()">
+      <div fxFlex class="tb-add-link-button" matTooltip="{{ 'widgets.quick-links.add-link' | translate }}" matTooltipPosition="above" (click)="addLink()">
         <mat-icon class="tb-add-icon">add</mat-icon>
       </div>
     </mat-grid-tile>

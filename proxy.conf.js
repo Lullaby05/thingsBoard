@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// const forwardUrl = "http://119.91.134.51:18080";
+// const wsForwardUrl = "ws://119.91.134.51:18080";
 const forwardUrl = "http://172.16.16.9:8080";
 const wsForwardUrl = "ws://172.16.16.9:8080";
 const ruleNodeUiforwardUrl = forwardUrl;

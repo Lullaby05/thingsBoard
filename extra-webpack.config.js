@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 const CompressionPlugin = require("compression-webpack-plugin");
-const JavaScriptOptimizerPlugin = require("@angular-devkit/build-angular/src/webpack/plugins/javascript-optimizer-plugin").JavaScriptOptimizerPlugin;
+const JavaScriptOptimizerPlugin =
+  require("@angular-devkit/build-angular/src/webpack/plugins/javascript-optimizer-plugin").JavaScriptOptimizerPlugin;
 const webpack = require("webpack");
 const dirTree = require("directory-tree");
-const ngWebpack = require('@ngtools/webpack');
-const keysTransformer = require('ts-transformer-keys/transformer').default;
+const ngWebpack = require("@ngtools/webpack");
+const keysTransformer = require("ts-transformer-keys/transformer").default;
 
 var langs = [];
 
-dirTree("./src/assets/locale/", {extensions: /\.json$/}, (item) => {
+dirTree("./src/assets/locale/", { extensions: /\.json$/ }, (item) => {
   /* It is expected what the name of a locale file has the following format: */
   /* 'locale.constant-LANG_CODE[_REGION_CODE].json', e.g. locale.constant-es.json or locale.constant-zh_CN.json*/
   langs.push(item.name.slice(item.name.lastIndexOf("-") + 1, -5));
 });
 
 module.exports = (config, options) => {
-
   config.ignoreWarnings.push(/Usage of '~' in imports is deprecated/);
   config.ignoreWarnings.push(/Did you mean "left" instead?/);
   config.ignoreWarnings.push(/autoprefixer/);
@@ -41,11 +41,9 @@ module.exports = (config, options) => {
     })
   );
   config.plugins.push(
-    new webpack.ProvidePlugin(
-      {
-        $: "jquery"
-      }
-    )
+    new webpack.ProvidePlugin({
+      $: "jquery",
+    })
   );
   config.plugins.push(
     new CompressionPlugin({
@@ -65,19 +63,25 @@ module.exports = (config, options) => {
   );
 
   config.module.rules[2].use[0].options.aot = false;
-  const index = config.plugins.findIndex(p => p instanceof ngWebpack.AngularWebpackPlugin);
+  const index = config.plugins.findIndex(
+    (p) => p instanceof ngWebpack.AngularWebpackPlugin
+  );
   let angularWebpackPlugin = config.plugins[index];
-  if (config.mode === 'production') {
+  if (config.mode === "production") {
     const angularCompilerOptions = angularWebpackPlugin.pluginOptions;
     angularCompilerOptions.emitClassMetadata = true;
     angularCompilerOptions.emitNgModuleScope = true;
     config.plugins.splice(index, 1);
-    angularWebpackPlugin = new ngWebpack.AngularWebpackPlugin(angularCompilerOptions);
+    angularWebpackPlugin = new ngWebpack.AngularWebpackPlugin(
+      angularCompilerOptions
+    );
     config.plugins.push(angularWebpackPlugin);
     const javascriptOptimizerOptions = config.optimization.minimizer[0].options;
     delete javascriptOptimizerOptions.define.ngJitMode;
     config.optimization.minimizer.splice(0, 1);
-    config.optimization.minimizer.unshift(new JavaScriptOptimizerPlugin(javascriptOptimizerOptions));
+    config.optimization.minimizer.unshift(
+      new JavaScriptOptimizerPlugin(javascriptOptimizerOptions)
+    );
   }
 
   addTransformerToAngularWebpackPlugin(angularWebpackPlugin, keysTransformer);
@@ -87,7 +91,12 @@ module.exports = (config, options) => {
 
 function addTransformerToAngularWebpackPlugin(plugin, transformer) {
   const originalCreateFileEmitter = plugin.createFileEmitter; // private method
-  plugin.createFileEmitter = function (program, transformers, getExtraDependencies, onAfterEmit) {
+  plugin.createFileEmitter = function (
+    program,
+    transformers,
+    getExtraDependencies,
+    onAfterEmit
+  ) {
     if (!transformers) {
       transformers = {};
     }
@@ -95,6 +104,11 @@ function addTransformerToAngularWebpackPlugin(plugin, transformer) {
       transformers = { before: [] };
     }
     transformers.before.push(transformer(program.getProgram()));
-    return originalCreateFileEmitter.apply(plugin, [program, transformers, getExtraDependencies, onAfterEmit]);
+    return originalCreateFileEmitter.apply(plugin, [
+      program,
+      transformers,
+      getExtraDependencies,
+      onAfterEmit,
+    ]);
   };
 }
